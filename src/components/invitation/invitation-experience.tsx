@@ -73,7 +73,7 @@ export function InvitationExperience(props: InvitationExperienceProps) {
   const preview = isPersonalized ? (props.preview ?? false) : false;
   const [invitation, setInvitation] = useState(initialInvitation);
   const [editing, setEditing] = useState(initialInvitation.status === 'pending');
-  const [contentMounted, setContentMounted] = useState(initialInvitation.status !== 'pending');
+  const [contentMounted, setContentMounted] = useState(false);
   const [entered, setEntered] = useState(false);
   const focusFrame = useRef<number | null>(null);
   const musicRef = useRef<AmbientMusicHandle>(null);
