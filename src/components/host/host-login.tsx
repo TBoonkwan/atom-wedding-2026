@@ -1,21 +1,32 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import { Mail } from 'lucide-react';
+import { LogIn } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function HostLogin() {
-  const [email, setEmail] = useState('');
+  const router = useRouter();
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await fetch('/api/auth/magic-link', {
+    setSubmitting(true);
+    setMessage('');
+    const response = await fetch('/api/auth/password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ username, password }),
     });
     const data = await response.json();
-    setMessage(response.ok ? 'ส่งลิงก์เข้า dashboard ไปทางอีเมลแล้ว' : data.error);
+    setSubmitting(false);
+    if (response.ok) {
+      router.refresh();
+      return;
+    }
+    setMessage(data.error);
   }
 
   return (
@@ -24,8 +35,9 @@ export function HostLogin() {
         <span className="host-logo">NP</span>
         <p>HOST ACCESS</p>
         <h1>Wedding Dashboard</h1>
-        <label>อีเมลที่ได้รับอนุญาต<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-        <button className="host-primary-button"><Mail size={18} /> ส่ง Magic Link</button>
+        <label>Username<input required autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} /></label>
+        <label>Password<input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
+        <button className="host-primary-button" disabled={submitting}><LogIn size={18} /> {submitting ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ Dashboard'}</button>
         {message ? <p role="status">{message}</p> : null}
       </form>
     </main>
