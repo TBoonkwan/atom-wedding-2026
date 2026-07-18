@@ -5,12 +5,13 @@ import { createBrowserClient } from '@supabase/ssr';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   Baby, Beer, CalendarClock, CheckCircle2, ClipboardList, Download, LayoutDashboard,
-  QrCode, Search, TableProperties, Upload, Users, XCircle,
+  Plus, QrCode, Search, TableProperties, Upload, Users, XCircle,
 } from 'lucide-react';
 import type { Invitation, RsvpHistoryEntry } from '@/lib/domain/types';
 import { csvCell } from '@/lib/domain/csv-export';
 import { invitationUrl as buildInvitationUrl } from '@/lib/domain/invitation-url';
-import { summarizeInvitationSeats } from '@/lib/domain/tables';
+import { GuestCreateModal, type ImportedLink } from './guest-create-modal';
+import { TablePlanner, type TableSummary } from './table-planner';
 
 interface Summary {
   statuses: { accepted: number; maybe: number; rejected: number; pending: number };
@@ -25,24 +26,7 @@ interface Summary {
   capacity: number;
 }
 
-interface TableSummary {
-  id: string;
-  number: number;
-  capacity: number;
-  revealed: boolean;
-  occupied: number;
-  remaining: number;
-  overCapacity: boolean;
-  assignments: { invitationId: string; tableId: string; seatCount: number }[];
-}
-
 type Tab = 'overview' | 'guests' | 'tables' | 'checkin';
-
-interface ImportedLink {
-  displayName: string;
-  inviteCode: string;
-  token: string;
-}
 
 export function HostDashboard({ email, demo }: { email: string; demo: boolean }) {
   const [tab, setTab] = useState<Tab>('overview');
@@ -52,11 +36,11 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
   const [search, setSearch] = useState('');
   const [notice, setNotice] = useState('');
   const [checkInCode, setCheckInCode] = useState(demo ? 'NP-AT-VENUE' : '');
+  const [creatingGuest, setCreatingGuest] = useState(false);
   const [editing, setEditing] = useState<Invitation | null>(null);
   const [importedLinks, setImportedLinks] = useState<ImportedLink[]>([]);
   const [rotatedLink, setRotatedLink] = useState('');
   const [rsvpHistory, setRsvpHistory] = useState<RsvpHistoryEntry[]>([]);
-  const [assignmentSeats, setAssignmentSeats] = useState<Record<string, number>>({});
 
   const load = useCallback(async () => {
     const response = await fetch('/api/host/overview', { cache: 'no-store' });
@@ -93,10 +77,6 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
   const filtered = useMemo(() => invitations.filter((invitation) =>
     `${invitation.displayName} ${invitation.contactName} ${invitation.inviteCode} ${invitation.phone ?? ''} ${invitation.email ?? ''}`.toLowerCase().includes(search.toLowerCase()),
   ), [invitations, search]);
-  const invitationSeats = useMemo(
-    () => summarizeInvitationSeats(invitations, tables.flatMap((table) => table.assignments)),
-    [invitations, tables],
-  );
 
   async function importCsv(file: File) {
     const csv = await file.text();
@@ -109,6 +89,12 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
       setImportedLinks(data.links);
       await load();
     }
+  }
+
+  async function guestCreated(links: ImportedLink[]) {
+    setImportedLinks((current) => [...current, ...links]);
+    setNotice('เพิ่มแขกและสร้างลิงก์เชิญแล้ว — กรุณาเก็บลิงก์ก่อนปิดหน้านี้');
+    await load();
   }
 
   function invitationUrl(token: string) {
@@ -187,17 +173,23 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
   }
 
   async function assignTable(tableId: string, invitationId: string, seatCount: number) {
-    if (!invitationId || seatCount < 1) return;
-    const response = await fetch('/api/host/tables', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'assign', tableId, invitationId, seatCount }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      setNotice(data.error ?? 'จัดโต๊ะไม่สำเร็จ');
-      return;
+    if (!invitationId || seatCount < 1) return false;
+    try {
+      const response = await fetch('/api/host/tables', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'assign', tableId, invitationId, seatCount }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setNotice(data.error ?? 'จัดโต๊ะไม่สำเร็จ');
+        return false;
+      }
+      await load();
+      return true;
+    } catch {
+      setNotice('เชื่อมต่อระบบไม่สำเร็จ กรุณาลองจัดโต๊ะอีกครั้ง');
+      return false;
     }
-    await load();
   }
 
   async function toggleReveal(table: TableSummary) {
@@ -256,13 +248,21 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
         </> : null}
 
         {tab === 'guests' ? <div className="host-panel guest-panel">
-          <div className="panel-toolbar"><label className="host-search"><Search size={17}/><input placeholder="ค้นหาชื่อหรือรหัสเชิญ" value={search} onChange={(event) => setSearch(event.target.value)} /></label><label className="host-primary-button"><Upload size={17}/> Import CSV<input type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void importCsv(file); }} /></label></div>
+          <div className="panel-toolbar">
+            <label className="host-search"><Search size={17}/><input placeholder="ค้นหาชื่อหรือรหัสเชิญ" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+            <div className="guest-toolbar-actions">
+              <button type="button" className="host-outline-button" onClick={() => setCreatingGuest(true)}><Plus size={17}/> เพิ่มแขก</button>
+              <label className="host-primary-button"><Upload size={17}/> Import CSV<input type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void importCsv(file); }} /></label>
+            </div>
+          </div>
           {importedLinks.length > 0 ? <section className="imported-links" aria-label="ลิงก์เชิญที่เพิ่งสร้าง">
             <div><div><strong>ลิงก์เชิญที่เพิ่งสร้าง</strong><p>Token จะแสดงครั้งเดียว ดาวน์โหลดเก็บไว้ก่อนออกจากหน้านี้</p></div><button className="host-outline-button" onClick={downloadImportedLinks}><Download size={16}/> Download links</button></div>
             <ul>{importedLinks.map((item) => <li key={item.token}><span><strong>{item.displayName}</strong><small>{item.inviteCode}</small></span><button onClick={() => void navigator.clipboard.writeText(invitationUrl(item.token))}>คัดลอกลิงก์</button></li>)}</ul>
           </section> : null}
           <div className="guest-table-wrap"><table className="guest-table"><thead><tr><th>Invitation</th><th>Status</th><th>จำนวน</th><th>โต๊ะ</th><th>เช็กอิน</th></tr></thead><tbody>{filtered.map((guest) => <tr key={guest.id}><td><button type="button" className="guest-row-button" onClick={() => void openGuest(guest)}><strong>{guest.displayName}</strong><small>{guest.inviteCode}</small></button></td><td><span className={`status-pill ${guest.status}`}>{guest.status}</span></td><td>{guest.adultCount + guest.childCount}</td><td>{guest.tableNumbers.join(', ') || '—'}</td><td>{guest.checkedInCount}</td></tr>)}</tbody></table></div>
         </div> : null}
+
+        {creatingGuest ? <GuestCreateModal onClose={() => setCreatingGuest(false)} onCreated={guestCreated} /> : null}
 
         {editing ? <div className="host-modal-backdrop"><div className="host-modal">
           <button type="button" className="modal-close" aria-label="ปิดหน้าต่างแก้ไข" onClick={() => setEditing(null)}><XCircle /></button>
@@ -291,7 +291,15 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
           {rotatedLink ? <div className="rotated-link"><QRCodeSVG value={rotatedLink} size={148}/><code>{rotatedLink}</code><button className="host-primary-button" onClick={() => void navigator.clipboard.writeText(rotatedLink)}>คัดลอกลิงก์</button></div> : null}
         </div></div> : null}
 
-        {tab === 'tables' ? <><section className="table-seat-overview"><strong>สถานะการจัดที่นั่ง</strong>{invitationSeats.map((item) => <span className={item.remaining === 0 ? 'complete' : ''} key={item.invitationId}><b>{item.displayName}</b><small>จัดแล้ว {item.assigned}/{item.expected} · {item.remaining > 0 ? `เหลือ ${item.remaining}` : 'ครบแล้ว'}</small></span>)}</section><div className="table-planner-grid">{tables.map((table) => <article className={table.overCapacity ? 'table-card over' : 'table-card'} key={table.id}><div className="table-circle"><strong>{table.number}</strong><span>{table.occupied}/{table.capacity}</span></div><p>{table.overCapacity ? `เกิน ${Math.abs(table.remaining)} ที่` : `เหลือ ${table.remaining} ที่`}</p><div className="table-assignment-list">{table.assignments.map((assignment) => { const invitation = invitations.find((item) => item.id === assignment.invitationId); return <span key={assignment.invitationId}><b>{invitation?.displayName ?? 'Invitation'}</b><small>{assignment.seatCount} ที่</small><button type="button" aria-label={`นำ ${invitation?.displayName ?? 'invitation'} ออกจากโต๊ะ ${table.number}`} onClick={() => void removeAssignment(table.id, assignment.invitationId)}>×</button></span>; })}</div><div className="table-add-controls"><input type="number" min="1" max="300" aria-label={`จำนวนที่นั่งสำหรับโต๊ะ ${table.number}`} value={assignmentSeats[table.id] ?? 1} onChange={(event) => setAssignmentSeats((current) => ({ ...current, [table.id]: Math.max(1, Number(event.target.value)) }))}/><select defaultValue="" aria-label={`เลือกแขกสำหรับโต๊ะ ${table.number}`} onChange={(event) => { const invitation = invitations.find((item) => item.id === event.target.value); if (invitation) void assignTable(table.id, invitation.id, assignmentSeats[table.id] ?? 1); event.target.value = ''; }}><option value="">+ เพิ่ม invitation</option>{invitations.filter((item) => item.status === 'accepted').map((item) => <option value={item.id} key={item.id}>{item.displayName}</option>)}</select></div><button className="reveal-toggle" onClick={() => toggleReveal(table)}>{table.revealed ? 'เผยเลขโต๊ะแล้ว' : 'ซ่อนเลขโต๊ะ'}</button></article>)}</div></> : null}
+        {tab === 'tables' ? (
+          <TablePlanner
+            invitations={invitations}
+            tables={tables}
+            onAssign={assignTable}
+            onRemove={removeAssignment}
+            onToggleReveal={toggleReveal}
+          />
+        ) : null}
 
         {tab === 'checkin' ? <div className="host-two-column"><article className="host-panel checkin-control"><p className="section-kicker">SELF CHECK-IN</p><h2>QR กลางหน้างาน</h2><p>เปิดใช้งานเมื่อทีมต้อนรับพร้อม ระบบจะสร้างรหัสใหม่สำหรับ QR นี้</p><div className="checkin-buttons"><button className="host-primary-button" onClick={() => toggleCheckIn(true)}>เปิดเช็กอิน</button><button className="host-outline-button" onClick={() => toggleCheckIn(false)}>ปิด</button></div></article><article className="host-panel qr-panel">{checkInCode ? <><QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin : ''}/check-in?eventCode=${encodeURIComponent(checkInCode)}`} size={230} level="M"/><strong>{checkInCode}</strong><small>แขกสแกน QR แล้วกรอกรหัส invitation 6 ตัว</small></> : <p>เช็กอินปิดอยู่</p>}</article></div> : null}
       </section>
