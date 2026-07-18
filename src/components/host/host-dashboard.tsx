@@ -259,7 +259,7 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
             <div><div><strong>ลิงก์เชิญที่เพิ่งสร้าง</strong><p>Token จะแสดงครั้งเดียว ดาวน์โหลดเก็บไว้ก่อนออกจากหน้านี้</p></div><button className="host-outline-button" onClick={downloadImportedLinks}><Download size={16}/> Download links</button></div>
             <ul>{importedLinks.map((item) => <li key={item.token}><span><strong>{item.displayName}</strong><small>{item.inviteCode}</small></span><button onClick={() => void navigator.clipboard.writeText(invitationUrl(item.token))}>คัดลอกลิงก์</button></li>)}</ul>
           </section> : null}
-          <div className="guest-table-wrap"><table className="guest-table"><thead><tr><th>Invitation</th><th>Status</th><th>จำนวน</th><th>โต๊ะ</th><th>เช็กอิน</th></tr></thead><tbody>{filtered.map((guest) => <tr key={guest.id}><td><button type="button" className="guest-row-button" onClick={() => void openGuest(guest)}><strong>{guest.displayName}</strong><small>{guest.inviteCode}</small></button></td><td><span className={`status-pill ${guest.status}`}>{guest.status}</span></td><td>{guest.adultCount + guest.childCount}</td><td>{guest.tableNumbers.join(', ') || '—'}</td><td>{guest.checkedInCount}</td></tr>)}</tbody></table></div>
+          <div className="guest-table-wrap"><table className="guest-table"><thead><tr><th>Invitation</th><th>Status</th><th>เหตุผล</th><th>จำนวน</th><th>โต๊ะ</th><th>เช็กอิน</th></tr></thead><tbody>{filtered.map((guest) => <tr key={guest.id}><td><button type="button" className="guest-row-button" onClick={() => void openGuest(guest)}><strong>{guest.displayName}</strong><small>{guest.inviteCode}</small></button></td><td><span className={`status-pill ${guest.status}`}>{guest.status}</span></td><td className="guest-reason-cell">{reasonForGuest(guest)}</td><td>{guest.adultCount + guest.childCount}</td><td>{guest.tableNumbers.join(', ') || '—'}</td><td>{guest.checkedInCount}</td></tr>)}</tbody></table></div>
         </div> : null}
 
         {creatingGuest ? <GuestCreateModal onClose={() => setCreatingGuest(false)} onCreated={guestCreated} /> : null}
@@ -305,6 +305,11 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
       </section>
     </main>
   );
+}
+
+function reasonForGuest(invitation: Invitation) {
+  if (invitation.status !== 'maybe' && invitation.status !== 'rejected') return '—';
+  return invitation.reason?.trim() || '—';
 }
 
 function Metric({ icon: Icon, label, value, tone }: { icon: typeof Users; label: string; value: string | number; tone: string }) {
