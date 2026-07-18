@@ -29,7 +29,10 @@ function openModernInvitation() {
 }
 
 beforeEach(() => window.localStorage.clear());
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('InvitationExperience', () => {
   it('renders the public wedding details without invitation-only actions', () => {
@@ -238,6 +241,50 @@ describe('InvitationExperience', () => {
     entryFrame.flush();
     expect(document.activeElement).toBe(document.getElementById('invitation-detail-heading'));
     entryFrame.restore();
+  });
+
+  it('starts ambient music when Enter is pressed and still shows the envelope', () => {
+    const close = vi.fn().mockResolvedValue(undefined);
+    const gain = {
+      gain: {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+      connect: vi.fn().mockReturnThis(),
+    };
+    const oscillator = {
+      type: 'sine',
+      frequency: { value: 0 },
+      connect: vi.fn(() => gain),
+      start: vi.fn(),
+      stop: vi.fn(),
+    };
+    const AudioContext = vi.fn(function FakeAudioContext() {
+      return {
+        currentTime: 0,
+        destination: {},
+        createOscillator: vi.fn(() => oscillator),
+        createGain: vi.fn(() => gain),
+        close,
+      };
+    });
+    vi.stubGlobal('AudioContext', AudioContext);
+
+    render(
+      <InvitationExperience
+        theme="modern-xi-club"
+        token="music-entry-demo"
+        initialInvitation={DEMO_PUBLIC_INVITATION}
+        calendarLinks={{ google: '#google', ics: '#ics' }}
+        preview
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+
+    expect(AudioContext).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'ปิดเสียงเพลงคลอ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' })).toBeInTheDocument();
   });
 
   it('stores the invite code but never persists envelope state or the bearer token', () => {
