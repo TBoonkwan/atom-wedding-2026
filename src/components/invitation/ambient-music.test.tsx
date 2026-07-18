@@ -51,7 +51,7 @@ describe('AmbientMusic', () => {
     act(() => ref.current?.start());
 
     expect(audio.AudioContext).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('button', { name: 'ปิดเสียงเพลงคลอ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ปิดเสียงเพลงคลอ' })).toHaveClass('music-mute');
   });
 
   it('stops on mute and never restarts during the same mount', () => {
