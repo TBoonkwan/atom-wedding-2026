@@ -1,6 +1,6 @@
 # NP Wedding — Landing Page & RSVP Dashboard
 
-Standalone Next.js/TypeScript application for the 4 December 2026 wedding at Celebce Venue. It includes three clickable visual drafts, tokenized guest invitations, RSVP, calendar files, a host dashboard, table planning, and self check-in.
+Standalone Next.js/TypeScript application for the 4 December 2026 wedding at Celebce Venue. It includes a public wedding experience, tokenized guest invitations, RSVP, calendar files, a host dashboard, table planning, and self check-in.
 
 ## Preview locally
 
@@ -10,17 +10,14 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`. With Supabase variables left empty the app uses a runnable in-memory demo repository:
+Open `http://localhost:3000`. With Supabase variables left empty, guest and host data use an in-memory local repository:
 
-- `/` — draft selector
-- `/preview/blush-shanghai`
-- `/preview/tea-to-toast`
-- `/preview/modern-xi-club`
-- `/i/demo` — production guest flow with demo data
-- `/host` — dashboard in demo mode
-- `/check-in?eventCode=NP-AT-VENUE` — self check-in demo
+- `/` — public wedding experience without RSVP
+- `/invitation/[token]` — personalized guest invitation and RSVP
+- `/host` — host dashboard
+- `/check-in?eventCode=NP-AT-VENUE` — venue self check-in
 
-Demo data resets whenever the server process restarts.
+Local in-memory data resets whenever the server process restarts.
 
 ## Tests and checks
 
@@ -55,9 +52,8 @@ The import response creates an opaque token and six-character invite code for ea
 
 1. Push this standalone directory to a private Git repository and import it into Vercel.
 2. Add all variables from `.env.example` in Vercel project settings. Set `NEXT_PUBLIC_SITE_URL` to the deployment origin.
-3. Set `PREVIEW_PASSWORD` on preview environments to protect `/preview/*`.
-4. Deploy, add the Vercel preview callback URL in Supabase Auth, and run staging checks with mock guests.
-5. After selecting a visual direction, point `/i/[token]` at that theme and connect the custom domain.
+3. Deploy, add the Vercel preview callback URL in Supabase Auth, and run staging checks with mock guests.
+4. Confirm the production branch and connect the custom domain.
 
 There is no third-party analytics on invitation routes. The payment QR is outside `public/` and is returned with `no-store` only after invitation-token validation.
 

@@ -1,5 +1,5 @@
-import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { InvitationExperience } from '@/components/invitation/invitation-experience';
 import { getRepository } from '@/lib/data/get-repository';
 import { buildCalendarUrls } from '@/lib/domain/calendar';
@@ -20,6 +20,7 @@ export default async function InvitationPage({ params }: { params: Promise<{ tok
   return (
     <InvitationExperience
       theme="modern-xi-club"
+      mode="personalized"
       token={token}
       initialInvitation={invitation}
       calendarLinks={buildCalendarUrls(token, origin)}

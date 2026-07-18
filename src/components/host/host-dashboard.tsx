@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { Invitation, RsvpHistoryEntry } from '@/lib/domain/types';
 import { csvCell } from '@/lib/domain/csv-export';
+import { invitationUrl as buildInvitationUrl } from '@/lib/domain/invitation-url';
 import { summarizeInvitationSeats } from '@/lib/domain/tables';
 
 interface Summary {
@@ -111,7 +112,7 @@ export function HostDashboard({ email, demo }: { email: string; demo: boolean })
   }
 
   function invitationUrl(token: string) {
-    return `${window.location.origin}/i/${token}`;
+    return buildInvitationUrl(window.location.origin, token);
   }
 
   function downloadImportedLinks() {
