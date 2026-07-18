@@ -22,9 +22,24 @@ export async function selfCheckIn(
     throw new Error('จำนวนผู้มาเช็กอินเกินจำนวนที่ตอบรับไว้ กรุณาติดต่อทีมงาน');
   }
 
-  return repository.upsertCheckIn({
+  const checkedIn = await repository.upsertCheckIn({
     invitationId: invitation.id,
     attendeeCount,
     checkedInAt: new Date().toISOString(),
   });
+  const [tables, assignments] = await Promise.all([
+    repository.listTables(),
+    repository.listTableAssignments(),
+  ]);
+  const tableNumberById = new Map(tables.map((table) => [table.id, table.number]));
+  const tableNumbers = [
+    ...new Set(
+      assignments
+        .filter((assignment) => assignment.invitationId === invitation.id)
+        .map((assignment) => tableNumberById.get(assignment.tableId))
+        .filter((number): number is number => number !== undefined),
+    ),
+  ].sort((left, right) => left - right);
+
+  return { ...checkedIn, tableNumbers };
 }

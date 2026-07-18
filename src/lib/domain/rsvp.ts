@@ -37,14 +37,6 @@ export const rsvpSchema = z
         path: ['childSeatCount'],
       });
     }
-
-    if (value.status !== 'accepted' && value.reason.length === 0) {
-      context.addIssue({
-        code: 'custom',
-        message: 'กรุณาบอกเหตุผลสั้น ๆ ให้เราทราบ',
-        path: ['reason'],
-      });
-    }
   });
 
 export function validateRsvp(input: unknown) {
