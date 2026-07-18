@@ -66,7 +66,26 @@ a { color: inherit; }
 .floating-cloud { position: absolute; width: 380px; height: 150px; border: 2px solid var(--accent-soft); border-radius: 50%; opacity: .27; }
 .cloud-one { top: 8%; left: -130px; }.cloud-two { right: -160px; bottom: 8%; }
 
-.music-toggle { position: fixed; right: 18px; top: 18px; z-index: 25; display: flex; align-items: center; gap: 8px; color: var(--ink); background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); border-radius: 99px; padding: 10px 14px; cursor: pointer; backdrop-filter: blur(10px); }
+.music-mute {
+  position: fixed;
+  z-index: 25;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 50%;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: 0 10px 28px #160a0828;
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+.music-mute:hover { background: var(--surface); }
+.music-mute:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .hero-section { min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 110px 24px 70px; position: relative; overflow: hidden; }
 .hero-pattern { position: absolute; inset: 4% 3%; border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent); pointer-events: none; }
 .hero-pattern::before, .hero-pattern::after { content: ""; position: absolute; width: 100px; height: 100px; border: 2px solid var(--accent); opacity: .36; }
@@ -203,7 +222,7 @@ a { color: inherit; }
   .calendar-actions { flex-direction: column; }.calendar-actions .secondary-button { width: 100%; }
 }
 @media (max-width: 540px) {
-  .preview-ribbon { top: auto; bottom: 12px; left: 12px; }.music-toggle { top: 12px; right: 12px; font-size: 11px; }
+  .preview-ribbon { top: auto; bottom: 12px; left: 12px; }.music-mute { top: 12px; right: 12px; }
   .hero-section { padding-top: 90px; }.hero-section h1 { font-size: 62px; }.hero-pattern { inset: 3%; }
   .countdown-unit { min-width: 0; padding: 11px 5px; }.countdown-unit strong { font-size: 20px; }
   .timeline-item { grid-template-columns: 30px 50px 1fr; gap: 12px; }.timeline-symbol { width: 44px; height: 44px; }.timeline-item h3 { font-size: 18px; }
