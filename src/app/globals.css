@@ -181,7 +181,6 @@ a { color: inherit; }
 [data-theme="modern-xi-club"] .detail-hero .invited-name { margin-bottom: 12px; }
 [data-theme="modern-xi-club"] .detail-hero .thai-names { margin: 14px 0 4px; font-size: clamp(18px, 2.3vw, 25px); }
 [data-theme="modern-xi-club"] .detail-hero .hero-descriptor { margin: 4px 0; line-height: 1.55; }
-[data-theme="modern-xi-club"] .detail-hero .date-lockup { margin-top: 12px; font-size: 28px; }
 [data-theme="modern-xi-club"] .detail-hero .venue-line { margin: 6px 0 0; }
 [data-theme="modern-xi-club"] .hero-calendar {
   display: inline-flex;
