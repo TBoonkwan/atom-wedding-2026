@@ -1,5 +1,18 @@
 import type { Invitation, TableAssignment, WeddingTable } from './types';
 
+export function invitationPartySize(invitation: Invitation) {
+  return invitation.adultCount + invitation.childCount;
+}
+
+export function listUnassignedAcceptedInvitations(
+  invitations: Invitation[],
+  assignments: TableAssignment[],
+) {
+  const assignedInvitationIds = new Set(assignments.map((item) => item.invitationId));
+  return invitations.filter((invitation) =>
+    invitation.status === 'accepted' && !assignedInvitationIds.has(invitation.id));
+}
+
 export function summarizeTables(tables: WeddingTable[], assignments: TableAssignment[]) {
   return tables.map((table) => {
     const tableAssignments = assignments.filter((assignment) => assignment.tableId === table.id);
@@ -24,7 +37,7 @@ export function validateSeatAssignment(
   seatCount: number,
 ) {
   if (invitation.status !== 'accepted') return 'เลือกจัดโต๊ะได้เฉพาะ invitation ที่ตอบรับแล้ว';
-  const expected = invitation.adultCount + invitation.childCount;
+  const expected = invitationPartySize(invitation);
   const assignedElsewhere = assignments
     .filter((item) => item.invitationId === invitation.id && item.tableId !== tableId)
     .reduce((total, item) => total + item.seatCount, 0);
@@ -39,7 +52,7 @@ export function summarizeInvitationSeats(
   assignments: TableAssignment[],
 ) {
   return invitations.filter((item) => item.status === 'accepted').map((invitation) => {
-    const expected = invitation.adultCount + invitation.childCount;
+    const expected = invitationPartySize(invitation);
     const assigned = assignments
       .filter((item) => item.invitationId === invitation.id)
       .reduce((total, item) => total + item.seatCount, 0);
