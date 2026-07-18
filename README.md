@@ -35,8 +35,9 @@ npm run build
 1. Create a Supabase project and run `supabase/migrations/202607170001_initial_schema.sql` in the SQL editor.
 2. Copy `.env.example` to `.env.local` and set the Supabase URL, anon key, and service-role key.
 3. Add the host email addresses to `HOST_EMAIL_ALLOWLIST`, separated by commas.
-4. In Supabase Auth, enable email magic links and add `http://localhost:3000/auth/callback` plus the Vercel preview/production callback URLs to the redirect allowlist.
-5. Sign in once at `/host`. An allowlisted user is provisioned into `host_users`, enabling the dashboard's realtime subscriptions.
+4. Set `HOST_PASSWORD` to the pilot dashboard password. The username is `admin`.
+5. In Supabase Auth, enable email magic links and add `http://localhost:3000/auth/callback` plus the Vercel preview/production callback URLs to the redirect allowlist.
+6. Sign in at `/host`. The first allowlisted email is provisioned into `host_users`, enabling the dashboard's realtime subscriptions.
 
 The service-role key is server-only. Never expose it through a `NEXT_PUBLIC_` variable or commit `.env.local`.
 
