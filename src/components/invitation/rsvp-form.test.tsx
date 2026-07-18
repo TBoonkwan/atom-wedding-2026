@@ -19,11 +19,52 @@ describe('RsvpForm', () => {
     expect(screen.getByLabelText('คราฟต์เบียร์ที่ชอบ')).toBeInTheDocument();
   });
 
-  it('requires a reason when the guest might not attend', () => {
+  it.each([
+    ['ยังไม่แน่ใจ', 'maybe'],
+    ['ไปไม่ได้', 'rejected'],
+  ] as const)('submits an optional empty reason for %s', async (choice, status) => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({}),
+    });
+    vi.stubGlobal('fetch', fetchMock);
     render(<RsvpForm token="demo" onSaved={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'ยังไม่แน่ใจ' }));
 
-    expect(screen.getByLabelText('บอกเหตุผลให้เราทราบ')).toBeRequired();
+    fireEvent.click(screen.getByRole('button', { name: choice }));
+    expect(screen.getByLabelText('บอกเหตุผลให้เราทราบ')).not.toBeRequired();
+    fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, request] = fetchMock.mock.calls[0];
+    expect(JSON.parse(request.body)).toMatchObject({ status, reason: '' });
+  });
+
+  it('clears a previous reason when the guest changes to attending', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({}),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(
+      <RsvpForm
+        token="changed-response"
+        initial={{
+          ...DEMO_PUBLIC_INVITATION,
+          status: 'maybe',
+          adultCount: 0,
+          childCount: 0,
+          reason: 'รอเช็กตารางงาน',
+        }}
+        onSaved={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'ไปร่วมงาน' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, request] = fetchMock.mock.calls[0];
+    expect(JSON.parse(request.body)).toMatchObject({ status: 'accepted', reason: '' });
   });
 
   it('submits a new accepted response with an empty song request', async () => {

@@ -306,7 +306,7 @@ In `src/components/checkin/checkin-form.test.tsx`, import `fireEvent`, `afterEac
 
 - [ ] **Step 6: Verify the complete check-in slice**
 
-Run `npm test -- src/lib/services/checkin-service.test.ts src/components/checkin/checkin-form.test.tsx src/app/api/check-ins/route.test.ts`.
+Run `npm test -- src/lib/services/checkin-service.test.ts src/components/checkin/checkin-form.test.tsx`.
 
 Expected: PASS. The component tests characterize existing rendering; the service test supplies the new hidden-assignment behavior.
 
