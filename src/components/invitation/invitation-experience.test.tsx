@@ -23,6 +23,11 @@ function holdAnimationFrame() {
   };
 }
 
+function openModernInvitation() {
+  fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+  fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+}
+
 beforeEach(() => window.localStorage.clear());
 afterEach(() => vi.restoreAllMocks());
 
@@ -106,7 +111,6 @@ describe('InvitationExperience', () => {
   });
 
   it('renders only the four selected portraits in the detail gallery', () => {
-    window.localStorage.setItem('np-wedding-envelope-modern-xi-club', 'opened');
     render(
       <InvitationExperience
         theme="modern-xi-club"
@@ -117,7 +121,7 @@ describe('InvitationExperience', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+    openModernInvitation();
     const gallerySection = screen.getByRole('heading', { name: 'ก่อนเราจะเจอกัน' })
       .closest('section');
     expect(gallerySection).not.toBeNull();
@@ -136,7 +140,6 @@ describe('InvitationExperience', () => {
   it.each(['blush-shanghai', 'tea-to-toast'] as const)(
     'keeps the legacy single-image gallery for the %s theme',
     (theme) => {
-      window.localStorage.setItem(`np-wedding-envelope-${theme}`, 'opened');
       render(
         <InvitationExperience
           theme={theme}
@@ -146,6 +149,8 @@ describe('InvitationExperience', () => {
           preview
         />,
       );
+
+      fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
 
       const gallerySection = screen.getByRole('heading', { name: 'ก่อนเราจะเจอกัน' })
         .closest('section');
@@ -165,7 +170,6 @@ describe('InvitationExperience', () => {
   it.each(['pending', 'maybe', 'rejected'] as const)(
     'does not offer calendar actions when the RSVP status is %s',
     (status) => {
-      window.localStorage.setItem('np-wedding-envelope-modern-xi-club', 'opened');
       render(
         <InvitationExperience
           theme="modern-xi-club"
@@ -176,7 +180,7 @@ describe('InvitationExperience', () => {
         />,
       );
 
-      fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+      openModernInvitation();
       expect(screen.queryByText('เพิ่มลงปฏิทินไว้เลย')).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Google Calendar' })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Apple / Outlook' })).not.toBeInTheDocument();
@@ -184,7 +188,6 @@ describe('InvitationExperience', () => {
   );
 
   it('offers calendar actions after the guest accepts', () => {
-    window.localStorage.setItem('np-wedding-envelope-modern-xi-club', 'opened');
     render(
       <InvitationExperience
         theme="modern-xi-club"
@@ -199,7 +202,7 @@ describe('InvitationExperience', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+    openModernInvitation();
     expect(screen.getByText('เพิ่มลงปฏิทินไว้เลย')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Google Calendar' })).toHaveAttribute('href', '#google');
     expect(screen.getByRole('link', { name: 'Apple / Outlook' })).toHaveAttribute('href', '#ics');
@@ -212,30 +215,9 @@ describe('InvitationExperience', () => {
     expect(isSectionInViewport(section, 800)).toBe(true);
   });
 
-  it('shows the landing before routing first-time and returning Modern guests to their entry state', () => {
-    const storageKey = 'np-wedding-envelope-modern-xi-club';
-    window.localStorage.removeItem(storageKey);
-    const firstEntryFrame = holdAnimationFrame();
-    const firstVisit = render(
-      <InvitationExperience
-        theme="modern-xi-club"
-        token="first-time-demo"
-        initialInvitation={DEMO_PUBLIC_INVITATION}
-        calendarLinks={{ google: '#google', ics: '#ics' }}
-        preview
-      />,
-    );
-
-    expect(screen.getByRole('button', { name: 'Enter to our wedding' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
-    expect(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' })).toBeInTheDocument();
-    firstEntryFrame.flush();
-    expect(document.activeElement).toBe(document.getElementById('invitation-envelope-button'));
-    firstEntryFrame.restore();
-
-    firstVisit.unmount();
-    window.localStorage.setItem(storageKey, 'opened');
-    const returningEntryFrame = holdAnimationFrame();
+  it('shows the landing and envelope on every Modern visit before details', () => {
+    window.localStorage.setItem('np-wedding-envelope-modern-xi-club', 'opened');
+    const entryFrame = holdAnimationFrame();
     render(
       <InvitationExperience
         theme="modern-xi-club"
@@ -246,43 +228,20 @@ describe('InvitationExperience', () => {
       />,
     );
 
+    expect(screen.getByRole('button', { name: 'Enter to our wedding' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
-    expect(screen.queryByRole('button', { name: 'เปิดซองคำเชิญ' })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Nathapol/i })).toBeInTheDocument();
-    returningEntryFrame.flush();
+    expect(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' })).toBeInTheDocument();
+    entryFrame.flush();
+    expect(document.activeElement).toBe(document.getElementById('invitation-envelope-button'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+    entryFrame.flush();
     expect(document.activeElement).toBe(document.getElementById('invitation-detail-heading'));
-    returningEntryFrame.restore();
+    entryFrame.restore();
   });
 
-  it('keeps the production Modern entry flow usable when storage is unavailable', () => {
-    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('Storage unavailable');
-    });
-    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('Storage unavailable');
-    });
-
-    try {
-      render(
-        <InvitationExperience
-          theme="modern-xi-club"
-          token="production-storage-unavailable"
-          initialInvitation={DEMO_PUBLIC_INVITATION}
-          calendarLinks={{ google: '#google', ics: '#ics' }}
-        />,
-      );
-
-      fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
-      expect(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' })).toBeInTheDocument();
-    } finally {
-      getItem.mockRestore();
-      setItem.mockRestore();
-    }
-  });
-
-  it('persists production envelope state with the invite code and never the bearer token', () => {
+  it('stores the invite code but never persists envelope state or the bearer token', () => {
     const bearerToken = 'raw-secret-invitation-token';
-    const getItem = vi.spyOn(Storage.prototype, 'getItem');
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
 
     render(
@@ -297,9 +256,9 @@ describe('InvitationExperience', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
     fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
 
-    const storageKeys = [...getItem.mock.calls, ...setItem.mock.calls]
-      .map(([key]) => String(key));
-    expect(storageKeys).toContain(`np-wedding-envelope-${DEMO_PUBLIC_INVITATION.inviteCode}`);
+    expect(setItem).toHaveBeenCalledWith('np-wedding-invite-code', DEMO_PUBLIC_INVITATION.inviteCode);
+    const storageKeys = setItem.mock.calls.map(([key]) => String(key));
+    expect(storageKeys.some((key) => key.startsWith('np-wedding-envelope-'))).toBe(false);
     expect(storageKeys.every((key) => !key.includes(bearerToken))).toBe(true);
   });
 });

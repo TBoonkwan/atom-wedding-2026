@@ -168,10 +168,6 @@ export function InvitationExperience(props: InvitationExperienceProps) {
               transition={{ duration: reduceMotion ? 0 : 0.35 }}
             >
         <EnvelopeGate
-          storageKey={isPersonalized
-            ? `np-wedding-envelope-${preview ? theme : invitation.inviteCode}`
-            : 'np-wedding-envelope-public'}
-          defaultOpen={isPersonalized && !preview && invitation.status !== 'pending'}
           onOpen={() => {
             setContentMounted(true);
             focusInvitationEntryTarget();
