@@ -191,38 +191,48 @@ a { color: inherit; }
 [data-theme="modern-xi-club"] .hero-mark { animation: xi-breathe 4.5s ease-in-out infinite; box-shadow: 0 18px 45px #ed8d8433; }
 [data-theme="modern-xi-club"] .content-section { padding-top: clamp(54px, 7vw, 86px); padding-bottom: clamp(54px, 7vw, 86px); }
 [data-theme="modern-xi-club"] .intro-card { padding: clamp(34px, 5vw, 58px) clamp(22px, 5vw, 72px); border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); border-radius: 32px; background: linear-gradient(135deg, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--accent-soft) 20%, transparent)); box-shadow: 0 22px 60px #160a0828; }
-[data-theme="modern-xi-club"] .timeline-stepper {
-  --stepper-marker-x: 99px;
-  position: relative;
-  display: grid;
-  gap: 0;
-  overflow: visible;
+[data-theme="modern-xi-club"] .timeline-stepper-centered {
+  --stepper-marker-y: 59px;
+  width: min(420px, 100%);
+  margin-inline: auto;
   padding: 0;
   border: 0;
+  overflow: visible;
 }
-[data-theme="modern-xi-club"] .timeline-stepper::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  top: 33px;
-  bottom: 33px;
-  left: var(--stepper-marker-x);
-  width: 1px;
-  background: linear-gradient(var(--accent), color-mix(in srgb, var(--accent) 30%, transparent));
-}
-[data-theme="modern-xi-club"] .timeline-stepper .timeline-item {
+[data-theme="modern-xi-club"] .timeline-stepper-centered::before { content: none; }
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item {
   position: relative;
-  display: grid;
-  grid-template-columns: 50px 72px 1fr;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 22px;
-  min-height: 118px;
-  padding: 12px 0;
+  min-height: 0;
+  gap: 6px;
+  padding: 12px 16px 36px;
   border: 0;
   background: transparent;
   box-shadow: none;
+  text-align: center;
 }
-[data-theme="modern-xi-club"] .timeline-stepper .timeline-symbol {
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: var(--stepper-marker-y);
+  bottom: calc(0px - var(--stepper-marker-y));
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(var(--accent), color-mix(in srgb, var(--accent) 30%, transparent));
+}
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-index,
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item > div {
+  position: relative;
+  z-index: 1;
+  padding-inline: 10px;
+  background: var(--paper);
+}
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-symbol {
+  position: relative;
   z-index: 1;
   width: 54px;
   height: 54px;
@@ -230,8 +240,11 @@ a { color: inherit; }
   background: var(--surface);
   box-shadow: 0 8px 24px #160a0828;
 }
-[data-theme="modern-xi-club"] .timeline-stepper .timeline-index { align-self: center; }
-[data-theme="modern-xi-club"] .timeline-stepper .timeline-item h3 { font-size: 20px; }
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item time,
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item h3 {
+  text-align: center;
+}
+[data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item h3 { font-size: 20px; }
 [data-theme="modern-xi-club"] .venue-section { gap: 24px; }
 [data-theme="modern-xi-club"] .map-art { min-height: 260px; border-radius: 30px; }
 [data-theme="modern-xi-club"] .gallery-reel { margin-top: 28px; }
@@ -270,17 +283,16 @@ a { color: inherit; }
   [data-theme="modern-xi-club"] .hero-section { min-height: 0; padding-top: 86px; padding-bottom: 46px; }
   [data-theme="modern-xi-club"] .detail-hero { min-height: 0; padding-top: 44px; padding-bottom: 24px; }
   [data-theme="modern-xi-club"] .content-section { padding-top: 48px; padding-bottom: 48px; }
-  [data-theme="modern-xi-club"] .timeline-stepper { --stepper-marker-x: 64px; }
-  [data-theme="modern-xi-club"] .timeline-stepper .timeline-item {
-    grid-template-columns: 30px 50px 1fr;
-    gap: 12px;
-    min-height: 104px;
+  [data-theme="modern-xi-club"] .timeline-stepper-centered { --stepper-marker-y: 54px; }
+  [data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item {
+    gap: 6px;
+    padding: 12px 12px 30px;
   }
-  [data-theme="modern-xi-club"] .timeline-stepper .timeline-symbol {
+  [data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-symbol {
     width: 44px;
     height: 44px;
   }
-  [data-theme="modern-xi-club"] .timeline-stepper .timeline-item h3 { font-size: 18px; }
+  [data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item h3 { font-size: 18px; }
   [data-theme="modern-xi-club"] .venue-section { gap: 20px; }
   [data-theme="modern-xi-club"] .map-art { min-height: 220px; }
 }
