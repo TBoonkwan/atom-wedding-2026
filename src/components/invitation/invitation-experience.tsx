@@ -7,7 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { TIMELINE, WEDDING } from '@/lib/domain/event';
 import { PUBLIC_WEDDING_PRESENTATION } from '@/lib/domain/public-invitation';
 import type { PublicInvitation } from '@/lib/services/invitation-service';
-import { AmbientMusic } from './ambient-music';
+import { AmbientMusic, type AmbientMusicHandle } from './ambient-music';
 import { Countdown } from './countdown';
 import { EnvelopeGate } from './envelope';
 import { InvitationLanding } from './invitation-landing';
@@ -76,6 +76,7 @@ export function InvitationExperience(props: InvitationExperienceProps) {
   const [contentMounted, setContentMounted] = useState(initialInvitation.status !== 'pending');
   const [entered, setEntered] = useState(false);
   const focusFrame = useRef<number | null>(null);
+  const musicRef = useRef<AmbientMusicHandle>(null);
   const copy = themeCopy[theme];
   const isModernTheme = theme === 'modern-xi-club';
   const reduceMotion = useReducedMotion();
@@ -149,6 +150,7 @@ export function InvitationExperience(props: InvitationExperienceProps) {
 
   return (
     <div className="invitation-theme" data-theme={theme}>
+      <AmbientMusic ref={musicRef} />
       {preview ? <div className="preview-ribbon">CLICKABLE DRAFT · {theme.replaceAll('-', ' ')}</div> : null}
       <div className="invitation-entry-stack">
         <AnimatePresence initial={false}>
@@ -156,6 +158,7 @@ export function InvitationExperience(props: InvitationExperienceProps) {
             <InvitationLanding
               key="landing"
               onEnter={() => {
+                musicRef.current?.start();
                 setEntered(true);
                 focusInvitationEntryTarget();
               }}
@@ -173,7 +176,6 @@ export function InvitationExperience(props: InvitationExperienceProps) {
             focusInvitationEntryTarget();
           }}
         >
-        <AmbientMusic />
         <header className={`hero-section${isModernTheme ? ' detail-hero' : ''}`}>
           <div className="hero-pattern" aria-hidden="true" />
           <p className="eyebrow">{copy.eyebrow}</p>
