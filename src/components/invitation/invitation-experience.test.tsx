@@ -27,6 +27,20 @@ beforeEach(() => window.localStorage.clear());
 afterEach(() => vi.restoreAllMocks());
 
 describe('InvitationExperience', () => {
+  it('renders the public wedding details without invitation-only actions', () => {
+    render(<InvitationExperience theme="modern-xi-club" mode="public" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+    fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+
+    expect(screen.getByText('เรียนเชิญร่วมเป็นส่วนหนึ่งในวันของเรา')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'ตอบรับ' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'แล้วเจอกันไหม?' })).not.toBeInTheDocument();
+    expect(screen.queryByText('วันงานเช็กอินเองได้')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Google Calendar' })).not.toBeInTheDocument();
+    expect(window.localStorage.getItem('np-wedding-invite-code')).toBeNull();
+  });
+
   it('shows compact section shortcuts after the envelope opens', () => {
     window.localStorage.removeItem('np-wedding-envelope-modern-xi-club');
     render(

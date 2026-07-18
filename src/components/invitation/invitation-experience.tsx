@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CalendarDays, MapPin, PartyPopper, Pencil, QrCode } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { TIMELINE, WEDDING } from '@/lib/domain/event';
+import { PUBLIC_WEDDING_PRESENTATION } from '@/lib/domain/public-invitation';
 import type { PublicInvitation } from '@/lib/services/invitation-service';
 import { AmbientMusic } from './ambient-music';
 import { Countdown } from './countdown';
@@ -14,6 +15,24 @@ import { RsvpForm } from './rsvp-form';
 import { WeddingGallery } from './wedding-gallery';
 
 export type DraftTheme = 'blush-shanghai' | 'tea-to-toast' | 'modern-xi-club';
+
+type PersonalizedInvitationExperienceProps = {
+  theme: DraftTheme;
+  mode?: 'personalized';
+  token: string;
+  initialInvitation: PublicInvitation;
+  calendarLinks: { google: string; ics: string };
+  preview?: boolean;
+};
+
+type PublicInvitationExperienceProps = {
+  theme: DraftTheme;
+  mode: 'public';
+};
+
+export type InvitationExperienceProps =
+  | PersonalizedInvitationExperienceProps
+  | PublicInvitationExperienceProps;
 
 export function isSectionInViewport(section: HTMLElement, viewportHeight: number) {
   const rect = section.getBoundingClientRect();
@@ -43,19 +62,15 @@ const galleryFeature = {
   alt: 'ภาพขาวดำของณัฐพลและเพ็ญพิสุทธิ์ถือแหวนแต่งงาน',
 };
 
-export function InvitationExperience({
-  theme,
-  token,
-  initialInvitation,
-  calendarLinks,
-  preview = false,
-}: {
-  theme: DraftTheme;
-  token: string;
-  initialInvitation: PublicInvitation;
-  calendarLinks: { google: string; ics: string };
-  preview?: boolean;
-}) {
+export function InvitationExperience(props: InvitationExperienceProps) {
+  const { theme } = props;
+  const isPersonalized = props.mode !== 'public';
+  const initialInvitation = isPersonalized
+    ? props.initialInvitation
+    : PUBLIC_WEDDING_PRESENTATION;
+  const token = isPersonalized ? props.token : '';
+  const calendarLinks = isPersonalized ? props.calendarLinks : undefined;
+  const preview = isPersonalized ? (props.preview ?? false) : false;
   const [invitation, setInvitation] = useState(initialInvitation);
   const [editing, setEditing] = useState(initialInvitation.status === 'pending');
   const [contentMounted, setContentMounted] = useState(initialInvitation.status !== 'pending');
@@ -80,13 +95,13 @@ export function InvitationExperience({
   }, []);
 
   useEffect(() => {
-    if (preview) return;
+    if (preview || !isPersonalized) return;
     try {
       window.localStorage.setItem('np-wedding-invite-code', invitation.inviteCode);
     } catch {
       // The invitation remains usable when browser storage is unavailable.
     }
-  }, [invitation.inviteCode, preview]);
+  }, [invitation.inviteCode, isPersonalized, preview]);
 
   useEffect(() => {
     const root = document.querySelector<HTMLElement>('.invitation-theme');
@@ -153,8 +168,10 @@ export function InvitationExperience({
               transition={{ duration: reduceMotion ? 0 : 0.35 }}
             >
         <EnvelopeGate
-          storageKey={`np-wedding-envelope-${preview ? theme : invitation.inviteCode}`}
-          defaultOpen={!preview && invitation.status !== 'pending'}
+          storageKey={isPersonalized
+            ? `np-wedding-envelope-${preview ? theme : invitation.inviteCode}`
+            : 'np-wedding-envelope-public'}
+          defaultOpen={isPersonalized && !preview && invitation.status !== 'pending'}
           onOpen={() => {
             setContentMounted(true);
             focusInvitationEntryTarget();
@@ -165,7 +182,11 @@ export function InvitationExperience({
           <div className="hero-pattern" aria-hidden="true" />
           <p className="eyebrow">{copy.eyebrow}</p>
           <div className="hero-mark" aria-hidden="true">{copy.mark}</div>
-          <p className="invited-name">เรียนเชิญ {invitation.displayName}</p>
+          <p className="invited-name">
+            {isPersonalized
+              ? `เรียนเชิญ ${invitation.displayName}`
+              : 'เรียนเชิญร่วมเป็นส่วนหนึ่งในวันของเรา'}
+          </p>
           <h1 id="invitation-detail-heading" tabIndex={-1}>
             <span>Nathapol</span>
             <small>&</small>
@@ -187,7 +208,9 @@ export function InvitationExperience({
             <a href="#schedule">กำหนดการ</a>
             <a href="#venue">สถานที่</a>
             <a href="#gallery">รูปเรา</a>
-            <a className="quick-nav-primary" href="#rsvp">ตอบรับ</a>
+            {isPersonalized
+              ? <a className="quick-nav-primary" href="#rsvp">ตอบรับ</a>
+              : null}
           </nav>
         ) : null}
 
@@ -256,7 +279,7 @@ export function InvitationExperience({
             )}
           </section>
 
-          <section className="content-section rsvp-section" id="rsvp" data-reveal>
+          {isPersonalized ? <section className="content-section rsvp-section" id="rsvp" data-reveal>
             <p className="section-kicker">RSVP · ภายใน 27 พฤศจิกายน 2569</p>
             <h2>แล้วเจอกันไหม?</h2>
             {invitation.status !== 'pending' && !editing ? (
@@ -267,7 +290,7 @@ export function InvitationExperience({
                   สถานะ: {invitation.status === 'accepted' ? `มาร่วม ${invitation.adultCount + invitation.childCount} คน` : invitation.status === 'maybe' ? 'ยังไม่แน่ใจ' : 'ไม่สะดวกมาร่วม'}
                 </p>
                 {invitation.tableNumbers.length > 0 ? <p className="table-badge">โต๊ะ {invitation.tableNumbers.join(', ')}</p> : null}
-                {invitation.status === 'accepted' ? (
+                {invitation.status === 'accepted' && calendarLinks ? (
                   <div className="accepted-calendar">
                     <CalendarDays size={28} />
                     <div>
@@ -289,12 +312,12 @@ export function InvitationExperience({
                 onSaved={(saved) => { setInvitation(saved); setEditing(false); }}
               />
             )}
-          </section>
+          </section> : null}
 
-          <section className="content-section checkin-teaser" data-reveal>
+          {isPersonalized ? <section className="content-section checkin-teaser" data-reveal>
             <QrCode size={28} />
             <div><h2>วันงานเช็กอินเองได้</h2><p>สแกน QR กลางที่หน้างาน แล้วใช้รหัสเชิญ <strong>{invitation.inviteCode}</strong></p></div>
-          </section>
+          </section> : null}
         </main>
 
         <footer className="wedding-footer"><span className="footer-monogram">NP</span><p>แล้วพบกันวันที่ 4 ธันวาคม 2569</p></footer>
