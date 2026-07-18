@@ -197,35 +197,40 @@ export function InvitationExperience(props: InvitationExperienceProps) {
           <Image className="brand-name-image" src="/brand/names.png" alt="Nathapol Pennisut" width={988} height={198} priority />
           <p className="thai-names">ณัฐพล & เพ็ญพิสุทธิ์</p>
           <p className="hero-descriptor">{copy.descriptor}</p>
-          {isModernTheme ? (
-            <>
-              <a
-                className="hero-calendar"
-                href={heroCalendarHref}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="เพิ่มงานแต่งงานวันที่ 4 ธันวาคม 2569 ลง Google Calendar"
-              >
-                <CalendarDays size={22} aria-hidden="true" />
-                <span>04</span><i aria-hidden="true">/</i>
-                <span>DEC</span><i aria-hidden="true">/</i>
-                <span>2026</span>
-              </a>
-              <p className="venue-line hero-event-highlight">
-                วันศุกร์ · 15:00 น. · Celebce Venue
-              </p>
-            </>
-          ) : (
+          {!isModernTheme ? (
             <>
               <div className="date-lockup">
                 <span>04</span><i>·</i><span>12</span><i>·</i><span>26</span>
               </div>
               <p className="venue-line">วันศุกร์ · 15:00 น. · Celebce Venue</p>
+              <Countdown />
+              <a className="scroll-cue" href="#schedule">เลื่อนดูรายละเอียด ↓</a>
             </>
-          )}
-          <Countdown />
-          <a className="scroll-cue" href="#schedule">เลื่อนดูรายละเอียด ↓</a>
+          ) : null}
         </header>
+
+        {isModernTheme ? (
+          <section className="event-details-section" aria-labelledby="event-details-heading">
+            <h2 className="sr-only" id="event-details-heading">ข้อมูลวันงาน</h2>
+            <a
+              className="hero-calendar"
+              href={heroCalendarHref}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="เพิ่มงานแต่งงานวันที่ 4 ธันวาคม 2569 ลง Google Calendar"
+            >
+              <CalendarDays size={22} aria-hidden="true" />
+              <span>04</span><i aria-hidden="true">/</i>
+              <span>DEC</span><i aria-hidden="true">/</i>
+              <span>2026</span>
+            </a>
+            <p className="venue-line hero-event-highlight">
+              วันศุกร์ · 15:00 น. · Celebce Venue
+            </p>
+            <Countdown />
+            <a className="scroll-cue" href="#schedule">เลื่อนดูรายละเอียด ↓</a>
+          </section>
+        ) : null}
 
         <main>
           <section
