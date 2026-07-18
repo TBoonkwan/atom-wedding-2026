@@ -36,7 +36,13 @@ afterEach(() => {
 
 describe('InvitationExperience', () => {
   it('renders the public wedding details without invitation-only actions', () => {
-    render(<InvitationExperience theme="modern-xi-club" mode="public" />);
+    render(
+      <InvitationExperience
+        theme="modern-xi-club"
+        mode="public"
+        calendarLink="#public-calendar"
+      />,
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
     fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
@@ -46,7 +52,33 @@ describe('InvitationExperience', () => {
     expect(screen.queryByRole('heading', { name: 'แล้วเจอกันไหม?' })).not.toBeInTheDocument();
     expect(screen.queryByText('วันงานเช็กอินเองได้')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Google Calendar' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', {
+      name: 'เพิ่มงานแต่งงานวันที่ 4 ธันวาคม 2569 ลง Google Calendar',
+    })).toHaveAttribute('href', '#public-calendar');
     expect(window.localStorage.getItem('np-wedding-invite-code')).toBeNull();
+  });
+
+  it('highlights the Modern date as an add-to-calendar link', () => {
+    render(
+      <InvitationExperience
+        theme="modern-xi-club"
+        token="calendar-highlight-demo"
+        initialInvitation={DEMO_PUBLIC_INVITATION}
+        calendarLinks={{ google: '#google', ics: '#ics' }}
+        preview
+      />,
+    );
+
+    openModernInvitation();
+
+    const calendar = screen.getByRole('link', {
+      name: 'เพิ่มงานแต่งงานวันที่ 4 ธันวาคม 2569 ลง Google Calendar',
+    });
+    expect(calendar).toHaveAttribute('href', '#google');
+    expect(calendar).toHaveClass('hero-calendar');
+    expect(calendar).toHaveTextContent('04/DEC/2026');
+    expect(screen.getByText('วันศุกร์ · 15:00 น. · Celebce Venue'))
+      .toHaveClass('hero-event-highlight');
   });
 
   it('removes the persistent section shortcuts from the Modern details', () => {
