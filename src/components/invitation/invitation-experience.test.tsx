@@ -151,6 +151,26 @@ describe('InvitationExperience', () => {
     });
   });
 
+  it('reveals content for an accepted guest after the envelope opens', async () => {
+    render(
+      <InvitationExperience
+        theme="modern-xi-club"
+        token="accepted-reveal-demo"
+        initialInvitation={{ ...DEMO_PUBLIC_INVITATION, status: 'accepted' }}
+        calendarLinks={{ google: '#google', ics: '#ics' }}
+        preview
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+    fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'กำหนดการ' }).closest('section'))
+        .toHaveClass('is-visible');
+    });
+  });
+
   it('renders only the four selected portraits in the detail gallery', () => {
     render(
       <InvitationExperience
@@ -323,6 +343,30 @@ describe('InvitationExperience', () => {
     expect(AudioContext).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: 'ปิดเสียงเพลงคลอ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' })).toBeInTheDocument();
+  });
+
+  it('keeps the envelope and details usable when ambient audio initialization fails', () => {
+    const AudioContext = vi.fn(function AudioContextUnavailable() {
+      throw new Error('Audio unavailable');
+    });
+    vi.stubGlobal('AudioContext', AudioContext);
+
+    render(
+      <InvitationExperience
+        theme="modern-xi-club"
+        token="audio-failure-demo"
+        initialInvitation={DEMO_PUBLIC_INVITATION}
+        calendarLinks={{ google: '#google', ics: '#ics' }}
+        preview
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+
+    expect(AudioContext).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+    expect(document.getElementById('invitation-detail-heading')).toBeInTheDocument();
   });
 
   it('stores the invite code but never persists envelope state or the bearer token', () => {
