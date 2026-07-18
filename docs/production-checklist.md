@@ -3,7 +3,6 @@
 ## Before staging
 
 - Run the Supabase migration and configure all Vercel environment variables.
-- Protect preview routes with `PREVIEW_PASSWORD`.
 - Add the preview callback URL to the Supabase Auth redirect allowlist.
 - Verify the host allowlist and complete one host magic-link sign-in.
 - Import only mock guests first; securely save the one-time invitation-link export.
