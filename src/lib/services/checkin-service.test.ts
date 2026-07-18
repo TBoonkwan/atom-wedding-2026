@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DemoRepository } from '@/lib/data/demo-repository';
 import { selfCheckIn } from './checkin-service';
 
@@ -36,5 +36,27 @@ describe('selfCheckIn', () => {
     await expect(selfCheckIn(repository, 'NP-AT-VENUE', 'TEA888', 6)).rejects.toThrow(
       'เกินจำนวนที่ตอบรับไว้',
     );
+  });
+
+  it('returns all assigned tables after check-in regardless of reveal state', async () => {
+    const repository = new DemoRepository();
+    await repository.setTableAssignment('demo-2', 'table-13', 1);
+    const assignments = await repository.listTableAssignments();
+    vi.spyOn(repository, 'listTableAssignments').mockResolvedValue([
+      ...assignments,
+      { invitationId: 'demo-2', tableId: 'table-13', seatCount: 1 },
+    ]);
+
+    const updated = await selfCheckIn(repository, 'NP-AT-VENUE', 'TEA888', 2);
+
+    expect(updated.tableNumbers).toEqual([2, 13]);
+  });
+
+  it('returns no table numbers when the checked-in invitation is unassigned', async () => {
+    const repository = new DemoRepository();
+
+    const updated = await selfCheckIn(repository, 'NP-AT-VENUE', 'DRAG01', 3);
+
+    expect(updated.tableNumbers).toEqual([]);
   });
 });
