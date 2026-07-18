@@ -83,7 +83,7 @@ describe('InvitationExperience', () => {
 
     const timeline = screen.getByRole('heading', { name: 'กำหนดการ' })
       .closest('section')?.querySelector('.timeline-list');
-    expect(timeline).toHaveClass('timeline-stepper');
+    expect(timeline).toHaveClass('timeline-stepper', 'timeline-stepper-centered');
     expect(Array.from(timeline?.querySelectorAll('time') ?? []).map((time) => time.textContent))
       .toEqual(['15:00', '15:40', '17:00', '18:00–20:00', '20:00–22:00']);
   });
@@ -105,6 +105,7 @@ describe('InvitationExperience', () => {
       const timeline = screen.getByRole('heading', { name: 'กำหนดการ' })
         .closest('section')?.querySelector('.timeline-list');
       expect(timeline).not.toHaveClass('timeline-stepper');
+      expect(timeline).not.toHaveClass('timeline-stepper-centered');
     },
   );
 
