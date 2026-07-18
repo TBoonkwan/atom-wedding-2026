@@ -99,7 +99,7 @@ describe('InvitationExperience', () => {
     expect(screen.getByRole('link', { name: 'เลื่อนดูรายละเอียด ↓' })).toHaveAttribute('href', '#schedule');
   });
 
-  it('renders the Modern timeline as a chronological vertical stepper', () => {
+  it('renders the Modern timeline as alternating chronological steps', () => {
     render(
       <InvitationExperience
         theme="modern-xi-club"
@@ -113,9 +113,12 @@ describe('InvitationExperience', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
     fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
 
-    const timeline = screen.getByRole('heading', { name: 'กำหนดการ' })
-      .closest('section')?.querySelector('.timeline-list');
-    expect(timeline).toHaveClass('timeline-stepper', 'timeline-stepper-centered');
+    const schedule = screen.getByRole('heading', { name: 'กำหนดการ' }).closest('section');
+    const timeline = schedule?.querySelector('.timeline-list');
+    expect(schedule).toHaveClass('schedule-section');
+    expect(timeline).toHaveClass('timeline-stepper', 'timeline-stepper-alternating');
+    expect(timeline).not.toHaveClass('timeline-stepper-centered');
+    expect(screen.queryByText('OUR DAY')).not.toBeInTheDocument();
     expect(Array.from(timeline?.querySelectorAll('time') ?? []).map((time) => time.textContent))
       .toEqual(['15:00', '15:40', '17:00', '18:00–20:00', '20:00–22:00']);
   });
@@ -138,6 +141,7 @@ describe('InvitationExperience', () => {
         .closest('section')?.querySelector('.timeline-list');
       expect(timeline).not.toHaveClass('timeline-stepper');
       expect(timeline).not.toHaveClass('timeline-stepper-centered');
+      expect(timeline).not.toHaveClass('timeline-stepper-alternating');
     },
   );
 
