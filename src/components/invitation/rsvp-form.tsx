@@ -56,12 +56,16 @@ export function RsvpForm({
     setInput((current) => ({ ...current, [field]: Number(value) }));
   }
 
+  function setStatus(status: RsvpInput['status']) {
+    setInput((current) => ({
+      ...current,
+      status,
+      reason: status === 'accepted' ? '' : current.reason,
+    }));
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (input.status !== 'accepted' && !input.reason.trim()) {
-      setMessage('กรุณาบอกเหตุผลสั้น ๆ ให้เราทราบ');
-      return;
-    }
     setSaving(true);
     setMessage('');
     try {
@@ -89,7 +93,7 @@ export function RsvpForm({
             type="button"
             key={status}
             className={input.status === status ? 'rsvp-choice active' : 'rsvp-choice'}
-            onClick={() => setInput((current) => ({ ...current, status }))}
+            onClick={() => setStatus(status)}
           >
             <Icon size={18} />
             {label}
@@ -117,7 +121,7 @@ export function RsvpForm({
         </div>
       ) : (
         <div className="form-stack">
-          <label>บอกเหตุผลให้เราทราบ<textarea required aria-label="บอกเหตุผลให้เราทราบ" value={input.reason} onChange={(event) => setInput((current) => ({ ...current, reason: event.target.value }))} /></label>
+          <label>บอกเหตุผลให้เราทราบ (ไม่บังคับ)<textarea aria-label="บอกเหตุผลให้เราทราบ" value={input.reason} onChange={(event) => setInput((current) => ({ ...current, reason: event.target.value }))} /></label>
           {input.status === 'rejected' ? (
             <div className="gift-card">
               <Heart size={20} />
