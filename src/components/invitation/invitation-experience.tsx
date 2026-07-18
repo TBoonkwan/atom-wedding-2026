@@ -228,16 +228,14 @@ export function InvitationExperience(props: InvitationExperienceProps) {
         </header>
 
         <main>
-          <section className="content-section intro-card" data-reveal>
-            <p className="section-kicker">OUR DAY</p>
-            <h2>วันเดียว หลายพิธี<br />และหนึ่งปาร์ตี้ที่อยากมีคุณ</h2>
-            <p>มาร่วมใช้เวลาตั้งแต่ขบวนขันหมาก ยกน้ำชา จนถึงแก้วสุดท้ายของ After Party ด้วยกันนะ</p>
-          </section>
-
-          <section className="content-section" id="schedule" data-reveal>
+          <section
+            className={`content-section${isModernTheme ? ' schedule-section' : ''}`}
+            id="schedule"
+            data-reveal
+          >
             <p className="section-kicker">TIMELINE · 04.12.2026</p>
             <h2>กำหนดการ</h2>
-            <div className={`timeline-list${isModernTheme ? ' timeline-stepper timeline-stepper-centered' : ''}`}>
+            <div className={`timeline-list${isModernTheme ? ' timeline-stepper timeline-stepper-alternating' : ''}`}>
               {TIMELINE.map((item, index) => (
                 <article className="timeline-item" key={item.time}>
                   <span className="timeline-index">0{index + 1}</span>
