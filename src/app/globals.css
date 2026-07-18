@@ -185,6 +185,33 @@ a { color: inherit; }
 [data-theme="modern-xi-club"] .detail-hero .hero-descriptor { margin: 4px 0; line-height: 1.55; }
 [data-theme="modern-xi-club"] .detail-hero .date-lockup { margin-top: 12px; font-size: 28px; }
 [data-theme="modern-xi-club"] .detail-hero .venue-line { margin: 6px 0 0; }
+[data-theme="modern-xi-club"] .hero-calendar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 58%, transparent);
+  border-radius: 18px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent-soft));
+  box-shadow: 0 14px 34px #160a0824;
+  font: 24px var(--serif);
+  letter-spacing: .05em;
+  text-decoration: none;
+}
+[data-theme="modern-xi-club"] .hero-calendar i { color: var(--accent); font-style: normal; }
+[data-theme="modern-xi-club"] .hero-calendar:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+[data-theme="modern-xi-club"] .hero-event-highlight {
+  margin: 8px 0 0;
+  padding: 7px 13px;
+  border-radius: 99px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent-soft) 72%, transparent);
+}
 [data-theme="modern-xi-club"] .detail-hero .countdown-grid { margin: 12px 0 6px; }
 [data-theme="modern-xi-club"] .detail-hero .countdown-unit { min-width: 68px; padding: 8px; }
 [data-theme="modern-xi-club"] .detail-hero .scroll-cue { margin-top: 4px; }
@@ -282,6 +309,18 @@ a { color: inherit; }
   .gallery-lightbox-count { grid-area: 3 / 1 / auto / -1; }
   [data-theme="modern-xi-club"] .hero-section { min-height: 0; padding-top: 86px; padding-bottom: 46px; }
   [data-theme="modern-xi-club"] .detail-hero { min-height: 0; padding-top: 44px; padding-bottom: 24px; }
+  [data-theme="modern-xi-club"] .hero-calendar {
+    gap: 7px;
+    max-width: calc(100vw - 48px);
+    padding: 10px 13px;
+    font-size: 20px;
+  }
+  [data-theme="modern-xi-club"] .hero-calendar svg { width: 19px; height: 19px; }
+  [data-theme="modern-xi-club"] .hero-event-highlight {
+    max-width: calc(100vw - 48px);
+    font-size: 11px;
+    letter-spacing: .03em;
+  }
   [data-theme="modern-xi-club"] .content-section { padding-top: 48px; padding-bottom: 48px; }
   [data-theme="modern-xi-club"] .timeline-stepper-centered { --stepper-marker-y: 54px; }
   [data-theme="modern-xi-club"] .timeline-stepper-centered .timeline-item {
