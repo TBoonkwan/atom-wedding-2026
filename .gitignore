@@ -42,3 +42,6 @@ next-env.d.ts
 
 # private event assets
 /private/payment-qr.png
+
+# local Supabase link metadata
+/supabase/.temp/
