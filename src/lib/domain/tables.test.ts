@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { summarizeInvitationSeats, summarizeTables, validateSeatAssignment } from './tables';
+import {
+  invitationPartySize,
+  listUnassignedAcceptedInvitations,
+  summarizeInvitationSeats,
+  summarizeTables,
+  validateSeatAssignment,
+} from './tables';
 import type { Invitation } from './types';
 
 const acceptedInvitation: Invitation = {
@@ -9,6 +15,20 @@ const acceptedInvitation: Invitation = {
 };
 
 describe('summarizeTables', () => {
+  it('calculates the full responding party size', () => {
+    expect(invitationPartySize(acceptedInvitation)).toBe(4);
+  });
+
+  it('lists only accepted invitations with no table assignment', () => {
+    const pendingInvitation = { ...acceptedInvitation, id: 'i2', status: 'pending' as const };
+    const seatedInvitation = { ...acceptedInvitation, id: 'i3' };
+
+    expect(listUnassignedAcceptedInvitations(
+      [acceptedInvitation, pendingInvitation, seatedInvitation],
+      [{ invitationId: 'i3', tableId: 't1', seatCount: 4 }],
+    ).map((item) => item.id)).toEqual(['i1']);
+  });
+
   it('supports split assignments and flags tables over capacity', () => {
     const summary = summarizeTables(
       [
