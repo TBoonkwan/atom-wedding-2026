@@ -1,52 +1,24 @@
 'use client';
 
-import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-
-const subscribeToStoredEnvelope = () => () => undefined;
-
-function wasEnvelopeOpened(storageKey: string) {
-  try {
-    return window.localStorage.getItem(storageKey) === 'opened';
-  } catch {
-    return false;
-  }
-}
-
-function storeOpenedEnvelope(storageKey: string) {
-  try {
-    window.localStorage.setItem(storageKey, 'opened');
-  } catch {
-    // The current session can still continue without persisted storage.
-  }
-}
 
 export function EnvelopeGate({
   children,
-  storageKey,
-  defaultOpen = false,
   onOpen,
 }: {
   children: ReactNode;
-  storageKey: string;
-  defaultOpen?: boolean;
   onOpen?: () => void;
 }) {
-  const [opened, setOpened] = useState(defaultOpen);
+  const [opened, setOpened] = useState(false);
   const reduceMotion = useReducedMotion();
-  const wasOpenedBefore = useSyncExternalStore(
-    subscribeToStoredEnvelope,
-    () => wasEnvelopeOpened(storageKey),
-    () => false,
-  );
 
   function openEnvelope() {
-    storeOpenedEnvelope(storageKey);
     onOpen?.();
     setOpened(true);
   }
 
-  if (opened || wasOpenedBefore) {
+  if (opened) {
     return (
       <motion.div
         initial={{ opacity: reduceMotion ? 1 : 0 }}
