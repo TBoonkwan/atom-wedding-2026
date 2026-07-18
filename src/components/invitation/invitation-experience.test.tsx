@@ -137,6 +137,9 @@ describe('InvitationExperience', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+      const dateLockup = document.querySelector('.date-lockup');
+      expect(dateLockup).toHaveTextContent('04·12·26');
+      expect(document.querySelector('.hero-calendar')).not.toBeInTheDocument();
       const timeline = screen.getByRole('heading', { name: 'กำหนดการ' })
         .closest('section')?.querySelector('.timeline-list');
       expect(timeline).not.toHaveClass('timeline-stepper');
