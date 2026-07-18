@@ -201,17 +201,6 @@ export function InvitationExperience(props: InvitationExperienceProps) {
           <a className="scroll-cue" href="#schedule">เลื่อนดูรายละเอียด ↓</a>
         </header>
 
-        {theme === 'modern-xi-club' ? (
-          <nav className="quick-nav" aria-label="ทางลัด">
-            <a href="#schedule">กำหนดการ</a>
-            <a href="#venue">สถานที่</a>
-            <a href="#gallery">รูปเรา</a>
-            {isPersonalized
-              ? <a className="quick-nav-primary" href="#rsvp">ตอบรับ</a>
-              : null}
-          </nav>
-        ) : null}
-
         <main>
           <section className="content-section intro-card" data-reveal>
             <p className="section-kicker">OUR DAY</p>
@@ -222,7 +211,7 @@ export function InvitationExperience(props: InvitationExperienceProps) {
           <section className="content-section" id="schedule" data-reveal>
             <p className="section-kicker">TIMELINE · 04.12.2026</p>
             <h2>กำหนดการ</h2>
-            <div className="timeline-list">
+            <div className={`timeline-list${isModernTheme ? ' timeline-stepper' : ''}`}>
               {TIMELINE.map((item, index) => (
                 <article className="timeline-item" key={item.time}>
                   <span className="timeline-index">0{index + 1}</span>

@@ -49,12 +49,11 @@ describe('InvitationExperience', () => {
     expect(window.localStorage.getItem('np-wedding-invite-code')).toBeNull();
   });
 
-  it('shows compact section shortcuts after the envelope opens', () => {
-    window.localStorage.removeItem('np-wedding-envelope-modern-xi-club');
+  it('removes the persistent section shortcuts from the Modern details', () => {
     render(
       <InvitationExperience
         theme="modern-xi-club"
-        token="demo-np-2026"
+        token="no-shortcuts-demo"
         initialInvitation={DEMO_PUBLIC_INVITATION}
         calendarLinks={{ google: '#google', ics: '#ics' }}
         preview
@@ -64,11 +63,50 @@ describe('InvitationExperience', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
     fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
 
-    const navigation = screen.getByRole('navigation', { name: 'ทางลัด' });
-    expect(navigation).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'ตอบรับ' })).toHaveAttribute('href', '#rsvp');
-    expect(screen.getByRole('link', { name: 'รูปเรา' })).toHaveAttribute('href', '#gallery');
+    expect(screen.queryByRole('navigation', { name: 'ทางลัด' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'เลื่อนดูรายละเอียด ↓' })).toHaveAttribute('href', '#schedule');
   });
+
+  it('renders the Modern timeline as a chronological vertical stepper', () => {
+    render(
+      <InvitationExperience
+        theme="modern-xi-club"
+        token="stepper-demo"
+        initialInvitation={DEMO_PUBLIC_INVITATION}
+        calendarLinks={{ google: '#google', ics: '#ics' }}
+        preview
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enter to our wedding' }));
+    fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+
+    const timeline = screen.getByRole('heading', { name: 'กำหนดการ' })
+      .closest('section')?.querySelector('.timeline-list');
+    expect(timeline).toHaveClass('timeline-stepper');
+    expect(Array.from(timeline?.querySelectorAll('time') ?? []).map((time) => time.textContent))
+      .toEqual(['15:00', '15:40', '17:00', '18:00–20:00', '20:00–22:00']);
+  });
+
+  it.each(['blush-shanghai', 'tea-to-toast'] as const)(
+    'keeps the %s timeline out of the Modern stepper treatment',
+    (theme) => {
+      render(
+        <InvitationExperience
+          theme={theme}
+          token={`legacy-timeline-${theme}`}
+          initialInvitation={DEMO_PUBLIC_INVITATION}
+          calendarLinks={{ google: '#google', ics: '#ics' }}
+          preview
+        />,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'เปิดซองคำเชิญ' }));
+      const timeline = screen.getByRole('heading', { name: 'กำหนดการ' })
+        .closest('section')?.querySelector('.timeline-list');
+      expect(timeline).not.toHaveClass('timeline-stepper');
+    },
+  );
 
   it('shows the compact detail header and wedding color palette after opening the envelope', () => {
     window.localStorage.removeItem('np-wedding-envelope-modern-xi-club');
