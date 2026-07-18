@@ -26,16 +26,23 @@ At mobile widths, all event copy collapses to one side of the central marker rai
 - Keep all schedule times, titles, icons, and their existing order unchanged.
 - Keep the schedule section as the scroll destination for the hero cue.
 
+## Hero Calendar Highlight
+
+Replace the plain `04 · 12 · 26` date lockup with a prominent calendar-style control showing `04 / DEC / 2026`. The control is a link that downloads or opens the invitation's existing calendar event so the guest can add the wedding to their calendar.
+
+Place a highlighted metadata strip immediately below it containing `วันศุกร์ · 15:00 น. · Celebce Venue`. The date control and metadata remain centered in the hero, use the Modern theme's existing palette, and expose a clear accessible name describing the add-to-calendar action.
+
 ## Scope and Boundaries
 
 - Apply the alternating treatment only to the Modern theme.
 - Keep both legacy themes unchanged.
 - Preserve the existing colors, reveal animation, reduced-motion behavior, semantic `article` and `time` markup, and central connector treatment.
-- Do not change music, envelope, navigation, RSVP, gallery, venue, or other invitation sections.
+- Do not change music, envelope, quick navigation, RSVP, gallery, venue section, or other invitation sections beyond the specified hero calendar highlight.
 
 ## Accessibility and Responsive Behavior
 
 - Schedule headings remain centered and readable.
+- The hero calendar control has a visible focus state and an accessible link name.
 - The connector and marker centers share the same x-coordinate.
 - Visual alternation must not change keyboard, reading, or chronological DOM order.
 - At 390×844, the timeline uses the mobile single-side layout without horizontal overflow.
@@ -45,6 +52,7 @@ At mobile widths, all event copy collapses to one side of the central marker rai
 ## Verification
 
 - Add focused regression coverage for the Modern alternating-timeline hook, centered schedule heading hook, and removal of the `OUR DAY` section.
+- Add focused coverage for the calendar link target, accessible name, and highlighted date metadata.
 - Preserve regression coverage proving legacy themes do not receive Modern timeline classes.
 - Run the focused invitation experience tests, complete Vitest suite, ESLint, and Next.js production build.
 - Visually verify alignment, alternation, mobile collapse, and lack of horizontal overflow at 390×844 and 1440×900.
@@ -54,4 +62,4 @@ At mobile widths, all event copy collapses to one side of the central marker rai
 - Alternating items on narrow mobile screens
 - Changing event icons, wording, or times
 - Adding timeline cards or navigation controls
-- Restyling non-schedule sections
+- Restyling non-schedule sections beyond the specified hero calendar highlight
