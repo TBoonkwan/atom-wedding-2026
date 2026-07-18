@@ -20,7 +20,7 @@ describe('validateRsvp', () => {
   });
 
   it.each(['maybe', 'rejected'] as const)(
-    'requires a reason for %s responses',
+    'accepts an empty optional reason for %s responses',
     (status) => {
       const result = validateRsvp({
         status,
@@ -34,9 +34,25 @@ describe('validateRsvp', () => {
         reason: '  ',
       });
 
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     },
   );
+
+  it('keeps the 500-character limit for an optional reason', () => {
+    const result = validateRsvp({
+      status: 'maybe',
+      adultCount: 0,
+      childCount: 0,
+      childSeatCount: 0,
+      dietaryNotes: '',
+      accessibilityNotes: '',
+      beerPreference: 'none',
+      songRequest: '',
+      reason: 'ก'.repeat(501),
+    });
+
+    expect(result.success).toBe(false);
+  });
 
   it('rejects more child seats than attending children', () => {
     const result = validateRsvp({
