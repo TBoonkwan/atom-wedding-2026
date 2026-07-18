@@ -58,7 +58,7 @@ describe('InvitationExperience', () => {
     expect(window.localStorage.getItem('np-wedding-invite-code')).toBeNull();
   });
 
-  it('highlights the Modern date as an add-to-calendar link', () => {
+  it('separates the Modern event details from the couple hero', () => {
     render(
       <InvitationExperience
         theme="modern-xi-club"
@@ -71,14 +71,27 @@ describe('InvitationExperience', () => {
 
     openModernInvitation();
 
-    const calendar = screen.getByRole('link', {
+    const hero = document.getElementById('invitation-detail-heading')?.closest('header');
+    const eventDetails = screen.getByRole('region', { name: 'ข้อมูลวันงาน' });
+    const calendar = within(eventDetails).getByRole('link', {
       name: 'เพิ่มงานแต่งงานวันที่ 4 ธันวาคม 2569 ลง Google Calendar',
     });
+
+    expect(hero).not.toContainElement(calendar);
+    expect(hero?.querySelector('.countdown-grid')).not.toBeInTheDocument();
+    expect(hero).not.toHaveTextContent('วันศุกร์ · 15:00 น. · Celebce Venue');
+    expect(within(eventDetails).getByText('วันศุกร์ · 15:00 น. · Celebce Venue'))
+      .toHaveClass('hero-event-highlight');
+    expect(within(eventDetails).getByLabelText('เวลานับถอยหลังถึงวันงาน'))
+      .toHaveClass('countdown-grid');
+    expect(within(eventDetails).getByRole('link', { name: 'เลื่อนดูรายละเอียด ↓' }))
+      .toHaveAttribute('href', '#schedule');
     expect(calendar).toHaveAttribute('href', '#google');
     expect(calendar).toHaveClass('hero-calendar');
     expect(calendar).toHaveTextContent('04/DEC/2026');
-    expect(screen.getByText('วันศุกร์ · 15:00 น. · Celebce Venue'))
-      .toHaveClass('hero-event-highlight');
+    expect(eventDetails.compareDocumentPosition(
+      screen.getByRole('heading', { name: 'กำหนดการ' }).closest('section') as HTMLElement,
+    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('removes the persistent section shortcuts from the Modern details', () => {
@@ -140,6 +153,9 @@ describe('InvitationExperience', () => {
       const dateLockup = document.querySelector('.date-lockup');
       expect(dateLockup).toHaveTextContent('04·12·26');
       expect(document.querySelector('.hero-calendar')).not.toBeInTheDocument();
+      expect(screen.queryByRole('region', { name: 'ข้อมูลวันงาน' })).not.toBeInTheDocument();
+      expect(document.querySelector('.hero-section .countdown-grid')).toBeInTheDocument();
+      expect(document.querySelector('.hero-section .scroll-cue')).toHaveAttribute('href', '#schedule');
       const timeline = screen.getByRole('heading', { name: 'กำหนดการ' })
         .closest('section')?.querySelector('.timeline-list');
       expect(timeline).not.toHaveClass('timeline-stepper');
