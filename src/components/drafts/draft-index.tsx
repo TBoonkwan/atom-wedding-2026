@@ -21,7 +21,7 @@ export function DraftIndex() {
                 src="/gallery/photo-08.jpg"
                 alt=""
                 fill
-                sizes="(max-width: 760px) 100vw, 33vw"
+                sizes="(max-width: 720px) 100vw, (max-width: 960px) 41vw, 33vw"
               />
               <span aria-hidden="true">{draft.number}</span>
             </div>

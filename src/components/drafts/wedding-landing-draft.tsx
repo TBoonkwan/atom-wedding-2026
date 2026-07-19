@@ -9,15 +9,16 @@ import {
 import './drafts.css';
 
 const facts = WEDDING_DRAFT_FACTS;
+const [partnerOne, partnerTwo] = facts.names.split(' & ');
 
 function WeddingPhoto({ className = '' }: { className?: string }) {
   return (
     <div className={`draft-photo ${className}`}>
       <Image
         src="/gallery/photo-08.jpg"
-        alt="Nathapol and Pennisut holding their wedding rings"
+        alt={`${partnerOne} and ${partnerTwo} holding their wedding rings`}
         fill
-        sizes="(max-width: 760px) 100vw, 62vw"
+        sizes="(max-width: 960px) 100vw, 64vw"
         loading="eager"
       />
     </div>
@@ -29,7 +30,7 @@ function NeonHero() {
     <section className="draft-hero neon-hero">
       <div className="neon-title">
         <h1>
-          NATHAPOL <i>&amp;</i> PENNISUT
+          {partnerOne} <i>&amp;</i> {partnerTwo}
         </h1>
       </div>
       <WeddingPhoto />
@@ -52,9 +53,9 @@ function PopHero() {
       <div className="pop-copy">
         <p>One day only · made with love</p>
         <h1>
-          NATHAPOL <i>&amp;</i>
+          {partnerOne} <i>&amp;</i>
           <br />
-          PENNISUT
+          {partnerTwo}
         </h1>
         <div className="pop-date">
           <strong>{facts.date}</strong>
@@ -86,9 +87,9 @@ function AfterdarkHero() {
         <WeddingPhoto />
         <p>Presents / a union after dark</p>
         <h1>
-          NATHAPOL
+          {partnerOne}
           <br />
-          PENNISUT
+          {partnerTwo}
         </h1>
       </div>
       <div className="afterdark-ticket">
@@ -98,14 +99,21 @@ function AfterdarkHero() {
         <b aria-hidden="true">囍</b>
         <dl>
           <div>
-            <dt>Venue</dt>
+            <dt>
+              <span className="afterdark-detail-number">01</span>
+              Venue
+            </dt>
             <dd>{facts.venue}</dd>
           </div>
           <div>
-            <dt>Running order</dt>
+            <dt>
+              <span className="afterdark-detail-number">02</span>
+              Running order
+            </dt>
             <dd>{facts.programme}</dd>
           </div>
         </dl>
+        <span className="afterdark-barcode" aria-hidden="true" />
         <a className="draft-enter afterdark-enter" href="#draft-details">
           Enter our wedding <span aria-hidden="true">→</span>
         </a>
@@ -143,7 +151,12 @@ export function WeddingLandingDraft({ theme }: { theme: DraftTheme }) {
         </div>
       </nav>
       <Hero />
-      <section className="draft-detail-strip" id="draft-details" tabIndex={-1}>
+      <section
+        className="draft-detail-strip"
+        id="draft-details"
+        aria-label="Wedding event details"
+        tabIndex={-1}
+      >
         <p>
           <span>Date</span>
           <strong>{facts.date}</strong>

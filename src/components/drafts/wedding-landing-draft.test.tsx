@@ -1,18 +1,28 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { WeddingLandingDraft } from './wedding-landing-draft';
 
 const draftStylesPath = resolve(process.cwd(), 'src/components/drafts/drafts.css');
 const draftStyles = existsSync(draftStylesPath) ? readFileSync(draftStylesPath, 'utf8') : '';
+const draftSource = readFileSync(
+  resolve(process.cwd(), 'src/components/drafts/wedding-landing-draft.tsx'),
+  'utf8',
+);
+const themes = [
+  ['neon-editorial', 'Neon Editorial Party'],
+  ['pop-postcard', 'Pop Postcard Collage'],
+  ['afterdark-ticket', 'Afterdark Ticket Club'],
+] as const;
+const draftHrefs = [
+  '/drafts/neon-editorial',
+  '/drafts/pop-postcard',
+  '/drafts/afterdark-ticket',
+];
 
 describe('WeddingLandingDraft', () => {
-  it.each([
-    ['neon-editorial', 'Neon Editorial Party'],
-    ['pop-postcard', 'Pop Postcard Collage'],
-    ['afterdark-ticket', 'Afterdark Ticket Club'],
-  ] as const)('renders %s with shared wedding facts', (theme, title) => {
+  it.each(themes)('renders %s with shared wedding facts', (theme, title) => {
     render(<WeddingLandingDraft theme={theme} />);
     expect(screen.getByText(title)).toBeInTheDocument();
     expect(screen.getAllByText('04.12.2026')).not.toHaveLength(0);
@@ -31,13 +41,67 @@ describe('WeddingLandingDraft', () => {
     ).toBeInTheDocument();
   });
 
-  it('provides draft switching and an in-page enter action', () => {
-    render(<WeddingLandingDraft theme="neon-editorial" />);
-    expect(screen.getAllByRole('link', { name: /view .* draft/i })).toHaveLength(3);
-    expect(screen.getByRole('link', { name: 'Enter our wedding' })).toHaveAttribute(
-      'href',
-      '#draft-details',
+  it.each(themes)(
+    'provides exact draft switching, CTA, and details landmark for %s',
+    (theme) => {
+      render(<WeddingLandingDraft theme={theme} />);
+      const navigation = screen.getByRole('navigation', { name: 'Draft navigation' });
+      const switcherLinks = within(navigation).getAllByRole('link', {
+        name: /view .* draft/i,
+      });
+
+      expect(switcherLinks.map((link) => link.getAttribute('href'))).toEqual(draftHrefs);
+      expect(screen.getByRole('link', { name: 'Enter our wedding' })).toHaveAttribute(
+        'href',
+        '#draft-details',
+      );
+      expect(
+        screen.getByRole('region', { name: 'Wedding event details' }),
+      ).toHaveAttribute('id', 'draft-details');
+    },
+  );
+
+  it('renders the approved assistive-technology-hidden barcode and numbered ticket rows', () => {
+    const { container } = render(<WeddingLandingDraft theme="afterdark-ticket" />);
+    const barcode = container.querySelector('.afterdark-barcode');
+    const numbers = Array.from(
+      container.querySelectorAll('.afterdark-detail-number'),
+      (number) => number.textContent,
     );
+
+    expect(barcode).toHaveAttribute('aria-hidden', 'true');
+    expect(numbers).toEqual(['01', '02']);
+  });
+
+  it('derives hero partner names once from the shared wedding facts', () => {
+    expect(draftSource).toContain(
+      "const [partnerOne, partnerTwo] = facts.names.split(' & ');",
+    );
+    expect(draftSource).not.toMatch(/NATHAPOL|PENNISUT/);
+  });
+
+  it('uses responsive image sizes matching the 960px hero collapse', () => {
+    render(<WeddingLandingDraft theme="neon-editorial" />);
+    expect(
+      screen.getByRole('img', { name: /holding their wedding rings/i }),
+    ).toHaveAttribute('sizes', '(max-width: 960px) 100vw, 64vw');
+  });
+
+  it('ships root reduced-motion, selector isolation, and approved motif contracts', () => {
+    expect(draftStyles).toContain(
+      'html:has(.landing-drafts),\n  html:has(.landing-draft) { scroll-behavior: auto !important; }',
+    );
+    expect(draftStyles).not.toMatch(
+      /(?:^|,)\s*(?:\.draft(?:s|-)|\.neon-|\.pop-|\.afterdark-|\[data-draft=)/m,
+    );
+    expect(draftStyles).toContain(
+      '.landing-draft[data-draft="pop-postcard"] .pop-collage .draft-photo::before',
+    );
+    expect(draftStyles).toContain('background: #087f78;');
+    expect(draftStyles).toContain(
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-barcode',
+    );
+    expect(draftStyles).toContain('repeating-linear-gradient');
   });
 
   it('ships scoped responsive styles and reduced-motion support', () => {
