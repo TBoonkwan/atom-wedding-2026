@@ -1,6 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { DraftIndex } from './draft-index';
+
+const draftStyles = readFileSync(
+  resolve(process.cwd(), 'src/components/drafts/drafts.css'),
+  'utf8',
+);
 
 describe('DraftIndex', () => {
   it('links to exactly the three approved full drafts', () => {
@@ -18,5 +25,9 @@ describe('DraftIndex', () => {
     render(<DraftIndex />);
     expect(screen.getByRole('heading', { level: 1, name: /three ways to say/i }))
       .toBeInTheDocument();
+  });
+
+  it('gives index links a scoped visible keyboard focus treatment', () => {
+    expect(draftStyles).toContain('.landing-drafts a:focus-visible');
   });
 });

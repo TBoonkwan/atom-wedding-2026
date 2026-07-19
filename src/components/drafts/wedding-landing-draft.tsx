@@ -6,6 +6,7 @@ import {
   WEDDING_DRAFT_FACTS,
   type DraftTheme,
 } from './draft-data';
+import './drafts.css';
 
 const facts = WEDDING_DRAFT_FACTS;
 

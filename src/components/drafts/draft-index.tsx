@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { DRAFTS, WEDDING_DRAFT_FACTS } from './draft-data';
+import './drafts.css';
 
 export function DraftIndex() {
   return (
