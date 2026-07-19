@@ -158,6 +158,18 @@ describe('WeddingLandingDraft', () => {
     expect(draftStyles).toContain('repeating-linear-gradient');
   });
 
+  it('styles every full Afterdark section within the scoped draft surface', () => {
+    [
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-full',
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-schedule',
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-venue',
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-colors',
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-gallery',
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-rsvp',
+      '.landing-draft[data-draft="afterdark-ticket"] .afterdark-closing',
+    ].forEach((selector) => expect(draftStyles).toContain(selector));
+  });
+
   it('ships scoped responsive styles and reduced-motion support', () => {
     expect(draftStyles).toContain('[data-draft="neon-editorial"]');
     expect(draftStyles).toContain('[data-draft="pop-postcard"]');
