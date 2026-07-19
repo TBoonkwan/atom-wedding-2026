@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { TIMELINE, WEDDING } from '@/lib/domain/event';
 import { WeddingLandingDraft } from './wedding-landing-draft';
 
 const draftStylesPath = resolve(process.cwd(), 'src/components/drafts/drafts.css');
@@ -72,6 +73,59 @@ describe('WeddingLandingDraft', () => {
     expect(barcode).toHaveAttribute('aria-hidden', 'true');
     expect(numbers).toEqual(['01', '02']);
   });
+
+  it('renders the complete Afterdark landing sections from domain data', () => {
+    render(<WeddingLandingDraft theme="afterdark-ticket" />);
+
+    expect(screen.getByRole('heading', { name: 'The running order' })).toBeInTheDocument();
+    TIMELINE.forEach((item) => {
+      expect(screen.getByText(item.time)).toBeInTheDocument();
+      expect(screen.getByText(item.title)).toBeInTheDocument();
+    });
+    expect(screen.getByRole('heading', { name: WEDDING.venue })).toBeInTheDocument();
+    expect(screen.getByText(WEDDING.address)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'เปิดแผนที่และนำทาง' })).toHaveAttribute(
+      'href',
+      WEDDING.mapUrl,
+    );
+    expect(screen.getByRole('heading', { name: 'Wedding colors' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Before we meet' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'RSVP preview' })).toBeInTheDocument();
+    expect(screen.getByText(/ฟอร์มจริงจะแสดงบนลิงก์เชิญส่วนตัว/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to top' })).toHaveAttribute(
+      'href',
+      '#afterdark-top',
+    );
+  });
+
+  it('shows four accessible editorial gallery images', () => {
+    render(<WeddingLandingDraft theme="afterdark-ticket" />);
+
+    expect(screen.getAllByRole('img')).toHaveLength(5);
+    expect(
+      screen.getByRole('img', { name: 'ณัฐพลและเพ็ญพิสุทธิ์ในชุดสีดำยืนใกล้กัน' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'ภาพสตูดิโอของณัฐพลและเพ็ญพิสุทธิ์' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'ณัฐพลและเพ็ญพิสุทธิ์ในชุดแต่งงานจีนสีแดง' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'ณัฐพลและเพ็ญพิสุทธิ์ในชุดแต่งงานสีขาว' }),
+    ).toBeInTheDocument();
+  });
+
+  it.each(['neon-editorial', 'pop-postcard'] as const)(
+    'keeps %s as a hero-only draft',
+    (theme) => {
+      render(<WeddingLandingDraft theme={theme} />);
+
+      expect(
+        screen.queryByRole('heading', { name: 'The running order' }),
+      ).not.toBeInTheDocument();
+    },
+  );
 
   it('derives hero partner names once from the shared wedding facts', () => {
     expect(draftSource).toContain(
