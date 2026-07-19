@@ -35,7 +35,7 @@ export const DRAFTS: readonly DraftOption[] = [
     strapline: 'A joyful love note with a graphic-design pulse',
     description: 'Warm, playful, art-directed.',
     href: '/drafts/pop-postcard',
-    palette: ['#fff8e8', '#e53a31', '#f3a7b3', '#1545c7'],
+    palette: ['#fff8e8', '#e53a31', '#f3a7b3', '#1545c7', '#087f78'],
   },
   {
     id: 'afterdark-ticket',

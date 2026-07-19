@@ -30,4 +30,16 @@ describe('DraftIndex', () => {
   it('gives index links a scoped visible keyboard focus treatment', () => {
     expect(draftStyles).toContain('.landing-drafts a:focus-visible');
   });
+
+  it('aligns preview image sizing with the 960px grid breakpoint', () => {
+    const { container } = render(<DraftIndex />);
+    const images = Array.from(container.querySelectorAll('img'));
+
+    expect(images).toHaveLength(3);
+    expect(images.map((image) => image.getAttribute('sizes'))).toEqual([
+      '(max-width: 720px) 100vw, (max-width: 960px) 41vw, 33vw',
+      '(max-width: 720px) 100vw, (max-width: 960px) 41vw, 33vw',
+      '(max-width: 720px) 100vw, (max-width: 960px) 41vw, 33vw',
+    ]);
+  });
 });
