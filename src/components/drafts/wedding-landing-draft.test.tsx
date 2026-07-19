@@ -11,7 +11,16 @@ describe('WeddingLandingDraft', () => {
     render(<WeddingLandingDraft theme={theme} />);
     expect(screen.getByText(title)).toBeInTheDocument();
     expect(screen.getAllByText('04.12.2026')).not.toHaveLength(0);
+    expect(screen.getAllByText('FRIDAY · 15:00')).not.toHaveLength(0);
     expect(screen.getAllByText('CELEBCE VENUE')).not.toHaveLength(0);
+    expect(screen.getAllByText('Tea ceremony · Dinner · After party')).not.toHaveLength(0);
+    if (theme === 'pop-postcard') {
+      expect(
+        screen.getByText('Tea ceremony · Dinner · After party', {
+          selector: '.pop-note',
+        }),
+      ).toBeInTheDocument();
+    }
     expect(
       screen.getByRole('img', { name: /holding their wedding rings/i }),
     ).toBeInTheDocument();

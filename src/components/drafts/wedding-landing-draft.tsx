@@ -72,7 +72,7 @@ function PopHero() {
         <span className="pop-stamp" aria-hidden="true">
           YES!
         </span>
-        <span className="pop-note">Tea · Dinner · Dance</span>
+        <span className="pop-note">{facts.programme}</span>
       </div>
     </section>
   );
