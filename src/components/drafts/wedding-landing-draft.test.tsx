@@ -83,11 +83,6 @@ describe('WeddingLandingDraft', () => {
       expect(screen.getByText(item.title)).toBeInTheDocument();
     });
     expect(screen.getByRole('heading', { name: WEDDING.venue })).toBeInTheDocument();
-    expect(screen.getByText(WEDDING.address)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'เปิดแผนที่และนำทาง' })).toHaveAttribute(
-      'href',
-      WEDDING.mapUrl,
-    );
     expect(screen.getByRole('heading', { name: 'Wedding colors' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Before we meet' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'RSVP preview' })).toBeInTheDocument();
@@ -98,10 +93,35 @@ describe('WeddingLandingDraft', () => {
     );
   });
 
-  it('shows four accessible editorial gallery images', () => {
+  it('shows Celebce as an editorial venue image without duplicate location details', () => {
     render(<WeddingLandingDraft theme="afterdark-ticket" />);
 
-    expect(screen.getAllByRole('img')).toHaveLength(5);
+    expect(
+      screen.getByRole('img', { name: 'ห้องจัดพิธีภายใน Celebce Venue' }),
+    ).toHaveAttribute(
+      'src',
+      expect.stringContaining('%2Fimages%2Fdrafts%2Fcelebce-venue.jpg'),
+    );
+    expect(screen.queryByText(WEDDING.address)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'เปิดแผนที่และนำทาง' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('places wedding colors as the final content section before the closing mark', () => {
+    const { container } = render(<WeddingLandingDraft theme="afterdark-ticket" />);
+    const afterdarkSections = Array.from(
+      container.querySelector('.afterdark-full')?.children ?? [],
+    );
+
+    expect(afterdarkSections.at(-2)).toHaveClass('afterdark-colors');
+    expect(afterdarkSections.at(-1)).toHaveClass('afterdark-closing');
+  });
+
+  it('shows four accessible editorial gallery images', () => {
+    const { container } = render(<WeddingLandingDraft theme="afterdark-ticket" />);
+
+    expect(container.querySelectorAll('.afterdark-gallery img')).toHaveLength(4);
     expect(
       screen.getByRole('img', { name: 'ณัฐพลและเพ็ญพิสุทธิ์ในชุดสีดำยืนใกล้กัน' }),
     ).toBeInTheDocument();
@@ -177,5 +197,14 @@ describe('WeddingLandingDraft', () => {
     expect(draftStyles).toContain('@media (max-width: 720px)');
     expect(draftStyles).toContain('@media (prefers-reduced-motion: reduce)');
     expect(draftStyles).toContain(':focus-visible');
+  });
+
+  it('shows complete vertical gallery images on small screens instead of center-cropping', () => {
+    expect(draftStyles).toMatch(
+      /@media \(max-width: 720px\)[\s\S]*?\.afterdark-gallery figure \{ aspect-ratio: auto; \}/,
+    );
+    expect(draftStyles).toMatch(
+      /@media \(max-width: 720px\)[\s\S]*?\.afterdark-gallery figure img \{ position: static; height: auto; object-fit: contain; \}/,
+    );
   });
 });

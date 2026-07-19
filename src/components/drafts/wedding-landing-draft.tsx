@@ -168,42 +168,27 @@ function AfterdarkFullSections() {
         className="afterdark-section afterdark-venue"
         aria-labelledby="afterdark-venue-heading"
       >
-        <div className="afterdark-map-grid" aria-hidden="true">
-          <span>CELEBCE</span>
-          <b>04.12</b>
-        </div>
-        <div className="afterdark-venue-copy">
+        <Image
+          className="afterdark-venue-image"
+          src="/images/drafts/celebce-venue.jpg"
+          alt="ห้องจัดพิธีภายใน Celebce Venue"
+          width={1569}
+          height={1044}
+          sizes="(max-width: 1220px) calc(100vw - 40px), 1180px"
+          loading="lazy"
+        />
+        <div className="afterdark-venue-label">
           <p className="afterdark-kicker">04 / LOCATION</p>
           <h2 id="afterdark-venue-heading">{WEDDING.venue}</h2>
-          <p>{WEDDING.address}</p>
-          <a href={WEDDING.mapUrl} target="_blank" rel="noreferrer">
-            เปิดแผนที่และนำทาง
-          </a>
         </div>
-      </section>
-
-      <section
-        className="afterdark-section afterdark-colors"
-        aria-labelledby="afterdark-colors-heading"
-      >
-        <p className="afterdark-kicker">05 / DRESS CODE</p>
-        <h2 id="afterdark-colors-heading">Wedding colors</h2>
-        <ul>
-          {weddingColors.map((color) => (
-            <li key={color.name}>
-              <span style={{ background: color.value }} aria-hidden="true" />
-              <b>{color.number}</b>
-              <strong>{color.name}</strong>
-            </li>
-          ))}
-        </ul>
+        <b className="afterdark-venue-date" aria-hidden="true">04.12</b>
       </section>
 
       <section
         className="afterdark-section afterdark-gallery"
         aria-labelledby="afterdark-gallery-heading"
       >
-        <p className="afterdark-kicker">06 / CONTACT SHEET</p>
+        <p className="afterdark-kicker">05 / CONTACT SHEET</p>
         <h2 id="afterdark-gallery-heading">Before we meet</h2>
         <div>
           {afterdarkGallery.map((image, index) => (
@@ -227,13 +212,30 @@ function AfterdarkFullSections() {
         aria-labelledby="afterdark-rsvp-heading"
       >
         <p className="afterdark-preview-label">Preview only</p>
-        <p className="afterdark-kicker">07 / RESPONSE</p>
+        <p className="afterdark-kicker">06 / RESPONSE</p>
         <h2 id="afterdark-rsvp-heading">RSVP preview</h2>
         <p>ฟอร์มจริงจะแสดงบนลิงก์เชิญส่วนตัวของแขกแต่ละคน</p>
         <ul aria-label="ตัวเลือกตอบรับคำเชิญ">
           <li>มาร่วมงาน</li>
           <li>ยังไม่แน่ใจ</li>
           <li>ไม่สะดวกมาร่วม</li>
+        </ul>
+      </section>
+
+      <section
+        className="afterdark-section afterdark-colors"
+        aria-labelledby="afterdark-colors-heading"
+      >
+        <p className="afterdark-kicker">07 / DRESS CODE</p>
+        <h2 id="afterdark-colors-heading">Wedding colors</h2>
+        <ul>
+          {weddingColors.map((color) => (
+            <li key={color.name}>
+              <span style={{ background: color.value }} aria-hidden="true" />
+              <b>{color.number}</b>
+              <strong>{color.name}</strong>
+            </li>
+          ))}
         </ul>
       </section>
 
