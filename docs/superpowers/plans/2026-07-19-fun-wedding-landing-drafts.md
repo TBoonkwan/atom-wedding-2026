@@ -665,6 +665,6 @@ Expected: exit code 0 and all four draft routes appear in the route output.
 
 - [ ] **Step 4: Inspect repository state**
 
-Run: `git status --short --branch && git diff --check HEAD~4..HEAD`
+Run: `git status --short --branch && git diff --check 1fc397f..HEAD`
 
 Expected: clean worktree and no whitespace errors.
