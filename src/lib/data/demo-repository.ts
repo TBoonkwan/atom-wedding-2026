@@ -1,3 +1,5 @@
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import type { WeddingRepository } from './repository';
 import type {
   CheckIn,
@@ -138,7 +140,32 @@ const seedInvitations: Invitation[] = [
   })),
 ];
 
+type DemoRepositoryState = {
+  invitations: Invitation[];
+  tokenHashes: [string, string][];
+  checkIns: CheckIn[];
+  rsvpHistory: RsvpHistoryEntry[];
+  auditLogs: HostAuditLog[];
+  tables: WeddingTable[];
+  assignments: TableAssignment[];
+  checkInCode: string | null;
+};
+
+function isDemoRepositoryState(value: unknown): value is DemoRepositoryState {
+  if (!value || typeof value !== 'object') return false;
+  const state = value as Partial<DemoRepositoryState>;
+  return Array.isArray(state.invitations)
+    && Array.isArray(state.tokenHashes)
+    && Array.isArray(state.checkIns)
+    && Array.isArray(state.rsvpHistory)
+    && Array.isArray(state.auditLogs)
+    && Array.isArray(state.tables)
+    && Array.isArray(state.assignments)
+    && (typeof state.checkInCode === 'string' || state.checkInCode === null);
+}
+
 export class DemoRepository implements WeddingRepository {
+  private readonly statePath?: string;
   private invitations = structuredClone(seedInvitations);
   private tokenHashes = new Map<string, string>([['demo-1', hashToken('demo-np-2026')]]);
   private checkIns: CheckIn[] = [];
@@ -156,6 +183,44 @@ export class DemoRepository implements WeddingRepository {
     { invitationId: 'demo-3', tableId: 'table-12', seatCount: 8 },
   ];
   private checkInCode: string | null = 'NP-AT-VENUE';
+
+  constructor(options: { statePath?: string } = {}) {
+    this.statePath = options.statePath;
+    if (!this.statePath || !existsSync(this.statePath)) return;
+
+    try {
+      const state: unknown = JSON.parse(readFileSync(this.statePath, 'utf8'));
+      if (!isDemoRepositoryState(state)) return;
+      this.invitations = state.invitations;
+      this.tokenHashes = new Map(state.tokenHashes);
+      this.checkIns = state.checkIns;
+      this.rsvpHistory = state.rsvpHistory;
+      this.auditLogs = state.auditLogs;
+      this.tables = state.tables;
+      this.assignments = state.assignments;
+      this.checkInCode = state.checkInCode;
+    } catch {
+      // A missing or incomplete local demo file should not prevent the app from starting.
+    }
+  }
+
+  private persist() {
+    if (!this.statePath) return;
+    const state: DemoRepositoryState = {
+      invitations: this.invitations,
+      tokenHashes: [...this.tokenHashes.entries()],
+      checkIns: this.checkIns,
+      rsvpHistory: this.rsvpHistory,
+      auditLogs: this.auditLogs,
+      tables: this.tables,
+      assignments: this.assignments,
+      checkInCode: this.checkInCode,
+    };
+    mkdirSync(dirname(this.statePath), { recursive: true });
+    const temporaryPath = `${this.statePath}.${process.pid}.tmp`;
+    writeFileSync(temporaryPath, JSON.stringify(state, null, 2));
+    renameSync(temporaryPath, this.statePath);
+  }
 
   async findInvitationByToken(token: string) {
     const tokenHash = hashToken(token === 'demo' ? 'demo-np-2026' : token);
@@ -203,6 +268,7 @@ export class DemoRepository implements WeddingRepository {
       this.assignments = this.assignments.filter((item) => item.invitationId !== invitationId);
       invitation.tableNumbers = [];
     }
+    this.persist();
     return structuredClone(invitation);
   }
 
@@ -214,6 +280,7 @@ export class DemoRepository implements WeddingRepository {
     if (index === -1) this.checkIns.push(checkIn);
     else this.checkIns[index] = checkIn;
     invitation.checkedInCount = checkIn.attendeeCount;
+    this.persist();
     return structuredClone(invitation);
   }
 
@@ -222,6 +289,7 @@ export class DemoRepository implements WeddingRepository {
     if (!invitation) throw new Error('ไม่พบคำเชิญ');
     this.checkIns = this.checkIns.filter((item) => item.invitationId !== invitationId);
     invitation.checkedInCount = 0;
+    this.persist();
     return structuredClone(invitation);
   }
 
@@ -259,6 +327,7 @@ export class DemoRepository implements WeddingRepository {
     created.forEach((invitation, index) => {
       this.tokenHashes.set(invitation.id, records[index].tokenHash);
     });
+    this.persist();
     return structuredClone(created);
   }
 
@@ -269,6 +338,7 @@ export class DemoRepository implements WeddingRepository {
     const invitation = this.invitations.find((item) => item.id === invitationId);
     if (!invitation) throw new Error('ไม่พบคำเชิญ');
     Object.assign(invitation, details);
+    this.persist();
     return structuredClone(invitation);
   }
 
@@ -277,6 +347,7 @@ export class DemoRepository implements WeddingRepository {
     if (!invitation) throw new Error('ไม่พบคำเชิญ');
     this.tokenHashes.set(invitationId, tokenHash);
     invitation.inviteCode = inviteCode;
+    this.persist();
     return structuredClone(invitation);
   }
 
@@ -287,22 +358,26 @@ export class DemoRepository implements WeddingRepository {
     const assignment = { invitationId, tableId, seatCount };
     if (index === -1) this.assignments.push(assignment);
     else this.assignments[index] = assignment;
+    this.persist();
   }
 
   async removeTableAssignment(invitationId: string, tableId: string) {
     this.assignments = this.assignments.filter(
       (item) => item.invitationId !== invitationId || item.tableId !== tableId,
     );
+    this.persist();
   }
 
   async setTableRevealed(tableId: string, revealed: boolean) {
     const table = this.tables.find((item) => item.id === tableId);
     if (!table) throw new Error('ไม่พบโต๊ะ');
     table.revealed = revealed;
+    this.persist();
   }
 
   async setCheckInEnabled(enabled: boolean) {
     this.checkInCode = enabled ? 'NP-AT-VENUE' : null;
+    this.persist();
     return this.checkInCode;
   }
 
@@ -321,5 +396,6 @@ export class DemoRepository implements WeddingRepository {
       metadata,
       createdAt: new Date().toISOString(),
     });
+    this.persist();
   }
 }

@@ -1,0 +1,174 @@
+@font-face {
+  font-family: "Perfecto Calligraphy";
+  src: url("/canva-wedding/fonts/perfecto-calligraphy.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Klavika Wedding";
+  src: url("/canva-wedding/fonts/klavika-light-italic.otf") format("opentype");
+  font-display: swap;
+  font-style: italic;
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: "Klavika Wedding";
+  src: url("/canva-wedding/fonts/klavika-medium-italic.otf") format("opentype");
+  font-display: swap;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.viewport {
+  --brown: #765341;
+  --brown-dark: #4c342a;
+  --paper: #fffefd;
+  --ink: #4c342a;
+  --surface: #fffefd;
+  --accent: #765341;
+  min-height: 100vh;
+  color: var(--brown-dark);
+  background: #efefef;
+}
+
+.invitation {
+  width: min(100%, 1366px);
+  margin-inline: auto;
+  overflow: hidden;
+  background: var(--paper) url("/canva-wedding/paper-background.png") center top / 100% auto no-repeat;
+  box-shadow: 0 0 40px #1112;
+}
+
+.hero { position: relative; min-height: clamp(670px, 117vw, 1595px); overflow: hidden; }
+.heroPhoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 24%; }
+.heroFade { position: absolute; inset: auto 0 0; height: 20%; background: linear-gradient(transparent, #fffefd 95%); }
+
+.namesBlock {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(-90px, -6vw, -30px);
+  padding: clamp(28px, 4vw, 58px) 6% clamp(20px, 3vw, 44px);
+  text-align: center;
+}
+
+.invitedName { margin: 0 0 1rem; color: #96765f; font-size: clamp(.78rem, 1.3vw, 1.08rem); letter-spacing: .06em; }
+.namesBlock h1 { margin: 0; color: #8a624e; font-family: "Perfecto Calligraphy", "Snell Roundhand", "Brush Script MT", cursive; font-size: clamp(3.2rem, 9.7vw, 8.2rem); font-weight: 400; line-height: .88; }
+.tagline, .scriptLabel, .sectionHeading h2 { font-family: "Klavika Wedding", "Arial Narrow", sans-serif; font-style: italic; font-weight: 300; }
+.tagline { margin: .8rem 0 1.2rem; color: #76584a; font-size: clamp(.9rem, 1.7vw, 1.4rem); }
+.musicRow { display: flex; align-items: center; justify-content: center; gap: 1.6rem; color: #b99b89; font-size: 1.25rem; }
+.playButton { display: grid; width: 54px; height: 54px; padding-left: 4px; place-items: center; border: 0; border-radius: 50%; color: white; background: #8b6d5d; box-shadow: 0 8px 22px #74513c36; cursor: pointer; }
+.playButton:focus-visible, .qrLink:focus-visible { outline: 3px solid #765341; outline-offset: 4px; }
+
+.countdownSection { width: min(88%, 710px); margin: 0 auto clamp(34px, 6vw, 80px); text-align: center; }
+.dateLink { display: inline-block; margin-bottom: 1.2rem; color: #917462; font-size: clamp(.72rem, 1.5vw, 1.05rem); letter-spacing: .18em; text-decoration: none; text-transform: uppercase; }
+.countdownSection :global(.countdown-grid) { display: grid; grid-template-columns: repeat(4, 1fr); padding: 14px 12px; border: 1px solid #bb9d8a70; border-radius: 18px; background: #fffcf9b8; box-shadow: 0 7px 20px #72503c12; }
+.countdownSection :global(.countdown-unit) { display: grid; gap: 3px; border-right: 1px solid #cbb8ac; }
+.countdownSection :global(.countdown-unit:last-child) { border-right: 0; }
+.countdownSection :global(.countdown-unit strong) { color: #7d604f; font: 500 clamp(1.25rem, 3.5vw, 2.8rem)/1 "Courier New", monospace; }
+.countdownSection :global(.countdown-unit span) { color: #6f5e54; font-size: clamp(.62rem, 1vw, .78rem); text-transform: uppercase; }
+
+.portraitGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(4px, .7vw, 10px); padding: 0 clamp(6px, 1.2vw, 18px) clamp(60px, 8vw, 110px); }
+.portraitGrid figure, .editorialGrid figure { margin: 0; overflow: hidden; }
+.portraitGrid figure { aspect-ratio: .7; border-radius: clamp(7px, 1.2vw, 16px); }
+.portraitGrid img, .editorialGrid img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.portraitGrid figure:nth-child(2) img { object-position: center 35%; }
+.portraitGrid figure:nth-child(5) img { object-position: 54% center; }
+
+.timelineSection { padding: 0 5% clamp(70px, 9vw, 130px); text-align: center; }
+.scriptLabel, .timelineSection h2 { margin: 0; color: #74594a; font-size: clamp(2.1rem, 5.6vw, 5.1rem); line-height: .8; }
+.timelineSection h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.dateCaption { margin: .9rem 0 clamp(28px, 4vw, 48px); color: #74594a; font-size: clamp(.82rem, 1.5vw, 1.12rem); letter-spacing: .14em; }
+.timeline { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.timeline::before { content: ""; position: absolute; top: 31px; left: 9%; right: 9%; height: 1px; background: #b4afa9; }
+.timeline li { position: relative; display: grid; justify-items: center; gap: 7px; color: #625b56; font-size: clamp(.7rem, 1.2vw, .92rem); }
+.timelineIcon { z-index: 1; display: grid; width: 64px; height: 64px; place-items: center; border: 1px solid #bbb8b4; border-radius: 50%; color: #898682; background: #f8f8f6; }
+.timelineIcon svg { width: 25px; }
+.timeline time { color: #725748; font-weight: 700; }
+
+.locationSection { text-align: center; }
+.sectionHeading { padding: 0 7% clamp(22px, 4vw, 54px); }
+.sectionHeading h2 { margin: 0; color: #7c6254; font-size: clamp(2.5rem, 6.4vw, 5.8rem); line-height: .8; }
+.sectionHeading p { margin: 1rem 0 .35rem; color: #675b55; font-size: clamp(.75rem, 1.4vw, 1rem); }
+.sectionHeading strong, .sectionHeading time { display: block; color: #816758; font-size: clamp(.66rem, 1.1vw, .9rem); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+.venueCard { position: relative; min-height: clamp(500px, 100vw, 1200px); overflow: hidden; }
+.venuePhoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.venueCard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#fff8 0, transparent 18%, transparent 78%, #fff 100%); pointer-events: none; }
+.qrLink { position: absolute; z-index: 1; bottom: 8%; left: 50%; width: clamp(120px, 21vw, 255px); transform: translateX(-50%); filter: drop-shadow(0 8px 16px #0002); }
+.qrArt { display: block; width: 100%; height: auto; }
+
+.dressSection { padding: clamp(38px, 6vw, 80px) clamp(8px, 2vw, 28px); background: #fff; }
+.dressCard { overflow: hidden; border-radius: 20px; }
+.dressArtwork { display: block; width: 100%; height: auto; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.editorialSection { background: #030303; }
+.editorialGrid { display: grid; grid-template-columns: repeat(2, 1fr); }
+.editorialGrid figure { min-height: clamp(270px, 66vw, 820px); }
+.editorialGrid figure:nth-child(3) { filter: grayscale(1); }
+.editorialGrid .widePhoto { grid-column: 1 / -1; min-height: 0; aspect-ratio: 1.5; }
+.editorialGrid figure:nth-child(5) img { object-position: center 20%; }
+
+.rsvpSection { position: relative; min-height: 1050px; padding: clamp(75px, 10vw, 130px) 6%; color: #eee7e0; background: #030303; border-radius: 42px 42px 0 0; overflow: hidden; }
+.rsvpBackdrop { position: absolute; inset: 0; opacity: .27; filter: grayscale(1); }
+.rsvpBackdrop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#000 0, transparent 30%, #000 78%); }
+.rsvpBackdrop img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; }
+.rsvpContent { position: relative; z-index: 1; width: min(100%, 760px); margin-inline: auto; }
+.rsvpTitle { margin: 0; text-align: center; font: italic 500 clamp(3.2rem, 9vw, 7.2rem)/.8 "Klavika Wedding", "Arial Narrow", sans-serif; letter-spacing: -.07em; }
+.rsvpDeadline { margin: 1rem 0 3rem; color: #a88975; text-align: center; font-size: clamp(.8rem, 1.4vw, 1.05rem); }
+.publicRsvp { display: grid; justify-items: center; gap: 16px; margin-top: 5rem; padding: 34px 24px; border: 1px solid #947b68; border-radius: 18px; text-align: center; background: #060606aa; }
+.publicRsvp svg { color: #b4917c; }
+.publicRsvp p { margin: 0; font-size: clamp(1.05rem, 2vw, 1.4rem); }
+.publicRsvp small { color: #b9ada5; }
+.checkinNote { display: flex; align-items: center; justify-content: center; gap: 11px; margin-top: 22px; color: #a99a91; text-align: center; font-size: .78rem; }
+.checkinNote svg { width: 20px; color: #b58d76; }
+.checkinNote p { margin: 0; }
+.checkinNote strong { color: #e5d6cc; font-weight: 600; letter-spacing: .04em; }
+.tableBadge { width: fit-content; margin: 14px auto; padding: 6px 14px; border: 1px solid #967967; border-radius: 99px; color: #e1d2c8; }
+.rsvpSection :global(.rsvp-form) { padding: clamp(20px, 4vw, 40px); border: 1px solid #91745f; border-radius: 18px; background: #050505d9; box-shadow: 0 20px 50px #0008; }
+.rsvpSection :global(.rsvp-choice-grid) { margin-top: 0; }
+.rsvpSection :global(.rsvp-choice) { border-color: #806d60; color: #d8cbc2; background: #171411; }
+.rsvpSection :global(.rsvp-choice.active) { color: #211610; background: #b49581; }
+.rsvpSection :global(.form-stack label), .rsvpSection :global(.number-grid label) { color: #c8b8ae; }
+.rsvpSection :global(.rsvp-form input), .rsvpSection :global(.rsvp-form textarea), .rsvpSection :global(.rsvp-form select) { border-color: #806e61; color: #eee8e3; background: #151210; }
+.rsvpSection :global(.primary-button) { color: #22150f; background: #b58d76; }
+.rsvpSection :global(.rsvp-summary) { border-color: #8b6c59; color: #eee7e0; background: #050505d9; }
+.rsvpSection :global(.rsvp-summary h3) { color: white; }
+.rsvpSection :global(.accepted-calendar) { border-color: #806e61; background: #151210; }
+.rsvpSection :global(.secondary-button) { border-color: #9e806d; color: #e4d6cc; }
+.rsvpSection :global(.text-button) { color: #c09a82; }
+
+.footer { padding: 45px 20px 60px; color: #a88d7c; text-align: center; background: #030303; }
+.footer p { margin: 0; font-family: "Perfecto Calligraphy", cursive; font-size: clamp(2rem, 4vw, 3.8rem); }
+.footer span { font-size: .72rem; letter-spacing: .2em; }
+
+@media (max-width: 600px) {
+  .invitation { box-shadow: none; }
+  .hero { min-height: 615px; }
+  .heroPhoto { object-position: 50% 22%; }
+  .namesBlock { margin-top: -58px; }
+  .namesBlock h1 { font-size: clamp(2rem, 10vw, 2.45rem); white-space: nowrap; }
+  .musicRow { gap: 1rem; }
+  .playButton { width: 46px; height: 46px; }
+  .dateLink { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 10px; }
+  .countdownSection :global(.countdown-unit span) { font-size: .75rem; }
+  .portraitGrid { padding-bottom: 62px; }
+  .timelineSection { padding-inline: 7%; }
+  .timeline { grid-template-columns: 1fr; width: min(100%, 360px); gap: 11px; margin-inline: auto; }
+  .timeline::before { top: 22px; bottom: 22px; left: 21px; right: auto; width: 1px; height: auto; }
+  .timelineIcon { width: 44px; height: 44px; }
+  .timelineIcon svg { width: 17px; }
+  .timeline li { grid-template: auto auto / 44px 1fr; align-items: center; justify-items: start; gap: 2px 13px; font-size: .8rem; text-align: left; }
+  .timeline li .timelineIcon { grid-row: 1 / 3; }
+  .timeline li time, .timeline li > span:last-child { grid-column: 2; }
+  .sectionHeading strong, .sectionHeading time { font-size: .75rem; }
+  .venueCard { min-height: 590px; }
+  .dressCard { border-radius: 14px; }
+  .editorialGrid figure { min-height: 290px; }
+  .editorialGrid .widePhoto { min-height: 0; }
+  .rsvpSection { min-height: 920px; border-radius: 26px 26px 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) { .playButton { transition: none; } }

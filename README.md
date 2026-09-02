@@ -10,14 +10,14 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`. With Supabase variables left empty, guest and host data use an in-memory local repository:
+Open `http://localhost:3000`. With Supabase variables left empty, guest and host data use a local demo repository:
 
 - `/` — public wedding experience without RSVP
 - `/invitation/[token]` — personalized guest invitation and RSVP
 - `/host` — host dashboard
 - `/check-in?eventCode=NP-AT-VENUE` — venue self check-in
 
-Local in-memory data resets whenever the server process restarts.
+In development, demo data is stored in the ignored file `.data/demo-repository.json`, so newly created guests, RSVP updates, and invitation-token hashes survive dev-server restarts. Raw invitation tokens are never written to that file. To reset only local demo data, stop the dev server, move `.data/demo-repository.json` to a backup location, and restart. Production must use Supabase rather than demo storage.
 
 ## Tests and checks
 

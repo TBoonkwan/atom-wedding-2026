@@ -1,4 +1,4 @@
-import { InvitationExperience } from '@/components/invitation/invitation-experience';
+import { CanvaWeddingExperience } from '@/components/invitation/canva-wedding-experience';
 import { buildCalendarUrls } from '@/lib/domain/calendar';
 
 export default function Home() {
@@ -6,8 +6,7 @@ export default function Home() {
   const calendarLink = buildCalendarUrls('public-invitation', origin).google;
 
   return (
-    <InvitationExperience
-      theme="modern-xi-club"
+    <CanvaWeddingExperience
       mode="public"
       calendarLink={calendarLink}
     />

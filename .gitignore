@@ -48,3 +48,9 @@ next-env.d.ts
 
 # local Supabase link metadata
 /supabase/.temp/
+
+# persistent local demo data
+/.data/
+
+# local source-asset archive (web derivatives live under public/)
+/.archive/

@@ -5,23 +5,34 @@ import { EVENT_START } from '@/lib/domain/event';
 import { getCountdownParts } from '@/lib/domain/countdown';
 
 export function Countdown() {
-  const [parts, setParts] = useState(() => getCountdownParts(new Date(), EVENT_START));
+  const [parts, setParts] = useState<ReturnType<typeof getCountdownParts> | null>(null);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setParts(getCountdownParts(new Date(), EVENT_START)), 1_000);
+    const update = () => setParts(getCountdownParts(new Date(), EVENT_START));
+    update();
+    const timer = window.setInterval(update, 1_000);
     return () => window.clearInterval(timer);
   }, []);
 
-  if (parts.complete) return <p className="countdown-complete">วันนี้แล้ว — แล้วเจอกันนะ!</p>;
+  if (parts?.complete) return <p className="countdown-complete">วันนี้แล้ว — แล้วเจอกันนะ!</p>;
 
-  return (
-    <div className="countdown-grid" aria-label="เวลานับถอยหลังถึงวันงาน">
-      {[
+  const units = parts
+    ? [
         ['วัน', parts.days],
         ['ชั่วโมง', parts.hours],
         ['นาที', parts.minutes],
         ['วินาที', parts.seconds],
-      ].map(([label, value]) => (
+      ]
+    : [
+        ['วัน', '--'],
+        ['ชั่วโมง', '--'],
+        ['นาที', '--'],
+        ['วินาที', '--'],
+      ];
+
+  return (
+    <div className="countdown-grid" aria-label="เวลานับถอยหลังถึงวันงาน">
+      {units.map(([label, value]) => (
         <div className="countdown-unit" key={label}>
           <strong>{String(value).padStart(2, '0')}</strong>
           <span>{label}</span>

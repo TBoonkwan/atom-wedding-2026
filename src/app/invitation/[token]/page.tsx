@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { InvitationExperience } from '@/components/invitation/invitation-experience';
+import { CanvaWeddingExperience } from '@/components/invitation/canva-wedding-experience';
 import { getRepository } from '@/lib/data/get-repository';
 import { buildCalendarUrls } from '@/lib/domain/calendar';
 import { getPublicInvitation } from '@/lib/services/invitation-service';
@@ -18,8 +18,7 @@ export default async function InvitationPage({ params }: { params: Promise<{ tok
   }
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   return (
-    <InvitationExperience
-      theme="modern-xi-club"
+    <CanvaWeddingExperience
       mode="personalized"
       token={token}
       initialInvitation={invitation}

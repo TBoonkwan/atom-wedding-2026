@@ -22,6 +22,7 @@
 - Select one visual theme for `/i/[token]`.
 - Confirm the venue address and Google Maps destination with Celebce Venue.
 - Confirm photography/publication permissions and the payment QR account holder.
+- Confirm web-embedding licenses for Perfecto and Klavika, or replace them with licensed webfonts.
 - Back up the guest list and invitation-link export before importing real guests.
 - Connect the custom domain, update `NEXT_PUBLIC_SITE_URL`, and add its auth callback URL.
 - Review Supabase logs, RLS policies, rate limits, and database backups.
