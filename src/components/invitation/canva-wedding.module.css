@@ -42,14 +42,14 @@
   box-shadow: 0 0 40px #1112;
 }
 
-.hero { position: relative; min-height: clamp(670px, 117vw, 1595px); overflow: hidden; }
-.heroPhoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 24%; }
+.hero { position: relative; overflow: hidden; }
+.heroPhoto { display: block; width: 100%; height: auto; }
 .heroFade { position: absolute; inset: auto 0 0; height: 20%; background: linear-gradient(transparent, #fffefd 95%); }
 
 .namesBlock {
   position: relative;
   z-index: 1;
-  margin-top: clamp(-90px, -6vw, -30px);
+  margin-top: 0;
   padding: clamp(28px, 4vw, 58px) 6% clamp(20px, 3vw, 44px);
   text-align: center;
 }
@@ -72,10 +72,9 @@
 
 .portraitGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(4px, .7vw, 10px); padding: 0 clamp(6px, 1.2vw, 18px) clamp(60px, 8vw, 110px); }
 .portraitGrid figure, .editorialGrid figure { margin: 0; overflow: hidden; }
-.portraitGrid figure { aspect-ratio: .7; border-radius: clamp(7px, 1.2vw, 16px); }
-.portraitGrid img, .editorialGrid img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.portraitGrid figure:nth-child(2) img { object-position: center 35%; }
-.portraitGrid figure:nth-child(5) img { object-position: 54% center; }
+.portraitGrid figure { aspect-ratio: 2 / 3; border-radius: clamp(7px, 1.2vw, 16px); }
+.portraitGrid img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.editorialGrid img { display: block; width: 100%; height: auto; }
 
 .timelineSection { padding: 0 5% clamp(70px, 9vw, 130px); text-align: center; }
 .scriptLabel, .timelineSection h2 { margin: 0; color: #74594a; font-size: clamp(2.1rem, 5.6vw, 5.1rem); line-height: .8; }
@@ -93,8 +92,8 @@
 .sectionHeading h2 { margin: 0; color: #7c6254; font-size: clamp(2.5rem, 6.4vw, 5.8rem); line-height: .8; }
 .sectionHeading p { margin: 1rem 0 .35rem; color: #675b55; font-size: clamp(.75rem, 1.4vw, 1rem); }
 .sectionHeading strong, .sectionHeading time { display: block; color: #816758; font-size: clamp(.66rem, 1.1vw, .9rem); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
-.venueCard { position: relative; min-height: clamp(500px, 100vw, 1200px); overflow: hidden; }
-.venuePhoto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.venueCard { position: relative; overflow: hidden; }
+.venuePhoto { display: block; width: 100%; height: auto; }
 .venueCard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#fff8 0, transparent 18%, transparent 78%, #fff 100%); pointer-events: none; }
 .qrLink { position: absolute; z-index: 1; bottom: 8%; left: 50%; width: clamp(120px, 21vw, 255px); transform: translateX(-50%); filter: drop-shadow(0 8px 16px #0002); }
 .qrArt { display: block; width: 100%; height: auto; }
@@ -106,15 +105,13 @@
 
 .editorialSection { background: #030303; }
 .editorialGrid { display: grid; grid-template-columns: repeat(2, 1fr); }
-.editorialGrid figure { min-height: clamp(270px, 66vw, 820px); }
-.editorialGrid figure:nth-child(3) { filter: grayscale(1); }
-.editorialGrid .widePhoto { grid-column: 1 / -1; min-height: 0; aspect-ratio: 1.5; }
-.editorialGrid figure:nth-child(5) img { object-position: center 20%; }
+.editorialGrid figure { align-self: start; }
+.editorialGrid .widePhoto { grid-column: 1 / -1; }
 
-.rsvpSection { position: relative; min-height: 1050px; padding: clamp(75px, 10vw, 130px) 6%; color: #eee7e0; background: #030303; border-radius: 42px 42px 0 0; overflow: hidden; }
+.rsvpSection { position: relative; margin-top: clamp(32px, 5vw, 72px); min-height: 1050px; padding: clamp(75px, 10vw, 130px) 6%; color: #eee7e0; background: #030303; border-radius: 42px 42px 0 0; overflow: hidden; }
 .rsvpBackdrop { position: absolute; inset: 0; opacity: .27; filter: grayscale(1); }
 .rsvpBackdrop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#000 0, transparent 30%, #000 78%); }
-.rsvpBackdrop img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; }
+.rsvpBackdrop img { width: 100%; height: 100%; object-fit: contain; object-position: center top; }
 .rsvpContent { position: relative; z-index: 1; width: min(100%, 760px); margin-inline: auto; }
 .rsvpTitle { margin: 0; text-align: center; font: italic 500 clamp(3.2rem, 9vw, 7.2rem)/.8 "Klavika Wedding", "Arial Narrow", sans-serif; letter-spacing: -.07em; }
 .rsvpDeadline { margin: 1rem 0 3rem; color: #a88975; text-align: center; font-size: clamp(.8rem, 1.4vw, 1.05rem); }
@@ -146,9 +143,6 @@
 
 @media (max-width: 600px) {
   .invitation { box-shadow: none; }
-  .hero { min-height: 615px; }
-  .heroPhoto { object-position: 50% 22%; }
-  .namesBlock { margin-top: -58px; }
   .namesBlock h1 { font-size: clamp(2rem, 10vw, 2.45rem); white-space: nowrap; }
   .musicRow { gap: 1rem; }
   .playButton { width: 46px; height: 46px; }
@@ -164,11 +158,10 @@
   .timeline li .timelineIcon { grid-row: 1 / 3; }
   .timeline li time, .timeline li > span:last-child { grid-column: 2; }
   .sectionHeading strong, .sectionHeading time { font-size: .75rem; }
-  .venueCard { min-height: 590px; }
   .dressCard { border-radius: 14px; }
-  .editorialGrid figure { min-height: 290px; }
-  .editorialGrid .widePhoto { min-height: 0; }
   .rsvpSection { min-height: 920px; border-radius: 26px 26px 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) { .playButton { transition: none; } }
+
+.sectionArtwork { display: block; width: 100%; height: auto; }

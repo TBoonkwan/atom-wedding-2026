@@ -4,18 +4,13 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import {
   CalendarDays,
-  Camera,
-  Check,
-  Coffee,
-  GlassWater,
   Heart,
   PartyPopper,
   Pencil,
   Play,
   QrCode,
-  Wine,
 } from 'lucide-react';
-import { TIMELINE, WEDDING } from '@/lib/domain/event';
+import { WEDDING } from '@/lib/domain/event';
 import type { PublicInvitation } from '@/lib/services/invitation-service';
 import { AmbientMusic, type AmbientMusicHandle } from './ambient-music';
 import { Countdown } from './countdown';
@@ -38,25 +33,26 @@ const media = '/canva-wedding/media';
 const photos = '/canva-wedding/photos';
 
 const portraitGallery = [
-  { src: `${photos}/black-editorial.webp`, alt: 'ภาพคู่บ่าวสาวโทนดำแบบบรรณาธิการ', width: 1800, height: 1200 },
-  { src: `${photos}/studio-seated.webp`, alt: 'คู่บ่าวสาวนั่งถ่ายภาพในสตูดิโอ', width: 1182, height: 1774 },
   { src: `${photos}/red-formal-portrait.webp`, alt: 'คู่บ่าวสาวในชุดราตรีสีแดงและชุดสูทสีดำ', width: 1200, height: 1800 },
-  { src: `${photos}/red-black-studio.webp`, alt: 'คู่บ่าวสาวในสตูดิโอสีดำและชุดราตรีสีแดง', width: 1200, height: 1800 },
-  { src: `${photos}/red-seated-portrait.webp`, alt: 'คู่บ่าวสาวในภาพพอร์ตเทรตนั่งโทนแดง', width: 1200, height: 1800 },
-  { src: `${photos}/red-solo-portrait.webp`, alt: 'เจ้าสาวในชุดราตรีสีแดง', width: 1176, height: 1762 },
+  { src: `${photos}/canva-black-window.webp`, alt: 'คู่บ่าวสาวชุดดำริมหน้าต่างตามต้นฉบับ Canva', width: 1200, height: 1800 },
+  { src: `${photos}/canva-white-standing.webp`, alt: 'คู่บ่าวสาวชุดแต่งงานสีขาวยืนมองกัน', width: 961, height: 1599 },
+  { src: `${photos}/canva-black-embrace.webp`, alt: 'คู่บ่าวสาวชุดดำโอบกอดกัน', width: 1066, height: 1599 },
+  { src: `${photos}/canva-white-bouquet.webp`, alt: 'เจ้าสาวถือช่อดอกไม้และซบไหล่เจ้าบ่าว', width: 1200, height: 1800 },
+  { src: `${photos}/canva-red-embrace.webp`, alt: 'คู่บ่าวสาวชุดราตรีสีแดงโอบกอดกันตามต้นฉบับ Canva', width: 1066, height: 1599 },
 ] as const;
 
 const editorialGallery = [
-  { src: `${photos}/rings-closeup.webp`, alt: 'ภาพขาวดำระยะใกล้ของคู่บ่าวสาวและแหวน', width: 1241, height: 1800 },
-  { src: `${photos}/red-lamp-portrait.webp`, alt: 'คู่บ่าวสาวในชุดราตรีสีแดงกับโคมไฟ', width: 1200, height: 1800 },
-  { src: `${photos}/red-lamp-portrait-alt.webp`, alt: 'ภาพพอร์ตเทรตคู่บ่าวสาวชุดสีแดงใต้แสงโคมไฟ', width: 1200, height: 1800 },
+  { src: `${photos}/red-seated-portrait.webp`, alt: 'คู่บ่าวสาวในภาพพอร์ตเทรตนั่งโทนแดง', width: 1200, height: 1800 },
   { src: `${photos}/red-chair-embrace.webp`, alt: 'คู่บ่าวสาวโอบกอดกันบนเก้าอี้สีแดง', width: 1200, height: 1800 },
-  { src: `${photos}/red-carpet.webp`, alt: 'คู่บ่าวสาวบนพรมลายกับชุดราตรีสีแดง', width: 1800, height: 1201, wide: true },
   { src: `${photos}/garden-wedding.webp`, alt: 'คู่บ่าวสาวในสวนกับชุดแต่งงานสีขาว', width: 1800, height: 1200, wide: true },
-  { src: `${photos}/rings-silhouette.webp`, alt: 'เงาคู่บ่าวสาวชูแหวนในบรรยากาศสีดำ', width: 1081, height: 952, wide: true },
+  { src: `${photos}/black-editorial.webp`, alt: 'ภาพคู่บ่าวสาวโทนดำแบบบรรณาธิการ', width: 1800, height: 1200, wide: true },
+  { src: `${photos}/rings-closeup.webp`, alt: 'ภาพขาวดำระยะใกล้ของคู่บ่าวสาวและแหวน', width: 1241, height: 1800, wide: true },
+  { src: `${photos}/studio-seated.webp`, alt: 'คู่บ่าวสาวนั่งถ่ายภาพในสตูดิโอ', width: 1182, height: 1774 },
+  { src: `${photos}/red-lamp-portrait-alt.webp`, alt: 'ภาพพอร์ตเทรตคู่บ่าวสาวชุดสีแดงใต้แสงโคมไฟ', width: 1200, height: 1800 },
+  { src: `${photos}/red-carpet.webp`, alt: 'คู่บ่าวสาวบนพรมลายกับชุดราตรีสีแดง', width: 1800, height: 1201, wide: true },
+  { src: `${photos}/white-camera.webp`, alt: 'เจ้าบ่าวถ่ายภาพเจ้าสาวที่ยื่นช่อดอกไม้', width: 1200, height: 1800 },
+  { src: `${photos}/white-kiss.webp`, alt: 'คู่บ่าวสาวจูบกันหลังช่อดอกไม้', width: 1200, height: 1800 },
 ] as const;
-
-const timelineIcons = [Coffee, Heart, GlassWater, Camera, Wine] as const;
 
 export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
   const personalized = props.mode === 'personalized';
@@ -118,9 +114,9 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
         </section>
 
         <section className={styles.portraitGrid} aria-label="ภาพพรีเวดดิ้ง">
-          {portraitGallery.map((photo) => (
+          {portraitGallery.map((photo, index) => (
             <figure key={photo.src}>
-              <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 720px) 33vw, 420px" />
+              <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 1366px) 33vw, 440px" loading={index < 3 ? 'eager' : 'lazy'} unoptimized={index === 0} />
             </figure>
           ))}
         </section>
@@ -129,27 +125,26 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
           <p className={styles.scriptLabel}>timing of the day</p>
           <h2 id="timeline-heading">timing of the day</h2>
           <p className={styles.dateCaption}>2026.12.04</p>
-          <ol className={styles.timeline}>
-            {TIMELINE.map((item, index) => {
-              const Icon = timelineIcons[index] ?? Check;
-              return (
-                <li key={item.time}>
-                  <span className={styles.timelineIcon}><Icon aria-hidden="true" /></span>
-                  <time>{item.time}</time>
-                  <span>{item.title}</span>
-                </li>
-              );
-            })}
-          </ol>
+          <Image
+            className={styles.sectionArtwork}
+            src={`${media}/timing.png`}
+            alt="กำหนดการ: แห่ขันหมาก 15.09 น. สู่ขอหมั้น 15.39 น. ยกน้ำชา 16.09 น. รดน้ำสังข์ 16.39 น. ส่งตัว 17.09 น. รับประทานอาหาร 18.30 น."
+            width={6517}
+            height={1504}
+            sizes="(max-width: 1366px) 100vw, 1366px"
+          />
         </section>
 
         <section className={styles.locationSection} aria-labelledby="location-heading">
-          <div className={styles.sectionHeading}>
-            <h2 id="location-heading">location</h2>
-            <p>ยินดีต้อนรับทุกคนมาร่วมเป็นส่วนหนึ่งในวันแต่งงานของเรา</p>
-            <strong>friday 4<sup>th</sup> december 2026 at celebce venue bangkok</strong>
-            <time>15.00 p.m.</time>
-          </div>
+          <h2 id="location-heading" className={styles.srOnly}>location</h2>
+          <Image
+            className={styles.sectionArtwork}
+            src={`${media}/location.png`}
+            alt="Location: Celebce Venue Bangkok วันที่ 4 ธันวาคม 2026 เวลา 15.00 น. ตามภาพคำเชิญ"
+            width={2146}
+            height={732}
+            sizes="(max-width: 1366px) 100vw, 1366px"
+          />
           <div className={styles.venueCard}>
             <Image className={styles.venuePhoto} src={`${media}/ee63bec71ca1611e34458fe6ad4ccd71.png`} alt="Celebce Venue" width={1685} height={1839} sizes="(max-width: 720px) 100vw, 1000px" />
             <a className={styles.qrLink} href={WEDDING.mapUrl} target="_blank" rel="noreferrer" aria-label={`เปิดแผนที่ ${WEDDING.venue}`}>
