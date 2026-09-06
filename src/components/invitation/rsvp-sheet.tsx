@@ -45,10 +45,14 @@ export function RsvpSheet({ targetRef, enabled, children }: {
 }) {
   const [view, setView] = useState<'form' | 'thanks' | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const wasEnabled = useRef(enabled);
 
   useEffect(() => {
-    if (enabled && !wasEnabled.current) setCompleted(false);
+    if (enabled && !wasEnabled.current) {
+      setCompleted(false);
+      setDismissed(false);
+    }
     wasEnabled.current = enabled;
   }, [enabled]);
 
@@ -64,7 +68,13 @@ export function RsvpSheet({ targetRef, enabled, children }: {
   }, [completed, enabled, targetRef]);
 
   function close() {
+    if (view === 'form') setDismissed(true);
     setView(null);
+  }
+
+  function openForm() {
+    setDismissed(false);
+    setView('form');
   }
 
   const complete = useCallback(() => {
@@ -74,6 +84,9 @@ export function RsvpSheet({ targetRef, enabled, children }: {
 
   return (
     <>
+      {enabled && dismissed && !completed && view === null ? (
+        <button type="button" className="primary-button" onClick={openForm}>ตอบรับคำเชิญ</button>
+      ) : null}
       <Modal open={view === 'form'} onClose={close} title="ตอบรับคำเชิญ" sheet>
         {children(complete)}
       </Modal>

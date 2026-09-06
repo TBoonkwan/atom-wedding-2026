@@ -170,7 +170,7 @@ it('submits a name from the shared link and shows confirmation', async () => {
 });
 
 
-it('opens the form when the RSVP section enters view and preserves a draft after returning', () => {
+it('opens the form when the RSVP section enters view and offers a button after it is dismissed', () => {
   const triggerRsvp = mockRsvpIntersection();
   render(<CanvaWeddingExperience mode="public" calendarLink="#calendar" />);
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -179,9 +179,8 @@ it('opens the form when the RSVP section enters view and preserves a draft after
   expect(screen.getByRole('dialog', { name: 'ตอบรับคำเชิญ' })).toBeVisible();
   fireEvent.change(screen.getByLabelText('ชื่อผู้ตอบรับ'), { target: { value: 'Draft guest' } });
   fireEvent.click(screen.getByRole('button', { name: 'ปิดแบบตอบรับ' }));
-  triggerRsvp(false);
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  triggerRsvp();
+  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
   expect(screen.getByRole('dialog', { name: 'ตอบรับคำเชิญ' })).toBeVisible();
   expect(screen.getByLabelText('ชื่อผู้ตอบรับ')).toHaveValue('Draft guest');
 });
