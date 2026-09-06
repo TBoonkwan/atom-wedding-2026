@@ -5,7 +5,7 @@ import { parseGuestCsv } from '@/lib/domain/csv';
 import type { GuestImportRow } from '@/lib/domain/csv';
 import type { Invitation } from '@/lib/domain/types';
 import { jsonError } from '@/lib/http/responses';
-import { buildInvitationLinks, prepareGuestInvitations } from '@/lib/services/guest-import';
+import { prepareGuestInvitations } from '@/lib/services/guest-import';
 
 const updateSchema = z.object({
   id: z.string().min(1),
@@ -90,7 +90,6 @@ export async function POST(request: Request) {
     );
     return Response.json({
       imported: invitations.length,
-      links: buildInvitationLinks(prepared),
     });
   } catch (error) {
     return jsonError(error);

@@ -8,7 +8,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('renders the Canva-inspired public invitation without an unsecured RSVP form', () => {
+it('renders the Canva-inspired public invitation with a named public RSVP form', () => {
   render(
     <CanvaWeddingExperience
       mode="public"
@@ -23,8 +23,8 @@ it('renders the Canva-inspired public invitation without an unsecured RSVP form'
   expect(screen.getByRole('link', { name: 'เปิดแผนที่ Celebce Venue' }))
     .toHaveAttribute('href', expect.stringContaining('share.google'));
   expect(screen.getByRole('heading', { name: 'dress code theme' })).toBeInTheDocument();
-  expect(screen.getByText('กรุณาเปิดลิงก์คำเชิญส่วนตัวเพื่อส่งคำตอบ')).toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: 'ยืนยันคำตอบ' })).not.toBeInTheDocument();
+  expect(screen.getByLabelText('ชื่อผู้ตอบรับ')).toBeRequired();
+  expect(screen.getByRole('button', { name: 'ยืนยันคำตอบ' })).toBeInTheDocument();
 });
 
 it('renders the approved original photography and dress-code artwork', () => {
@@ -57,12 +57,12 @@ it('renders the existing RSVP form inside the personalized Canva-inspired invita
   const rsvp = screen.getByRole('region', { name: 'ตอบรับคำเชิญ' });
   expect(within(rsvp).getByRole('button', { name: 'ไปร่วมงาน' })).toBeInTheDocument();
   expect(within(rsvp).getByRole('button', { name: 'ยืนยันคำตอบ' })).toBeInTheDocument();
-  expect(within(rsvp).getByText(`รหัสเชิญ ${DEMO_PUBLIC_INVITATION.inviteCode}`)).toBeInTheDocument();
+  expect(within(rsvp).queryByText(/เพื่อเช็กอิน/)).not.toBeInTheDocument();
   expect(within(rsvp).getByText('27.11.2026')).toBeInTheDocument();
   expect(screen.queryByText('กรุณาเปิดลิงก์คำเชิญส่วนตัวเพื่อส่งคำตอบ')).not.toBeInTheDocument();
 });
 
-it('keeps the invite code available for the on-site check-in flow without persisting the token', () => {
+it('does not persist an invitation code or token for check-in', () => {
   const bearerToken = 'secure-token-that-must-not-be-stored';
   const setItem = vi.spyOn(Storage.prototype, 'setItem');
 
@@ -75,7 +75,7 @@ it('keeps the invite code available for the on-site check-in flow without persis
     />,
   );
 
-  expect(setItem).toHaveBeenCalledWith('np-wedding-invite-code', DEMO_PUBLIC_INVITATION.inviteCode);
+  expect(setItem).not.toHaveBeenCalled();
   expect(setItem.mock.calls.flat().join(' ')).not.toContain(bearerToken);
 });
 
@@ -114,4 +114,13 @@ it('keeps YouTube and its music controls out of the invitation', () => {
   render(<CanvaWeddingExperience mode="public" calendarLink="#calendar" />);
   expect(screen.queryByTitle('Let It Be — The Beatles')).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'เปิดเพลงคลอ' })).not.toBeInTheDocument();
+});
+
+it('submits a name from the shared link and shows confirmation', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ...DEMO_PUBLIC_INVITATION, displayName: 'คุณใหม่', status: 'accepted' }) }));
+  render(<CanvaWeddingExperience mode="public" calendarLink="#calendar" />);
+  fireEvent.change(screen.getByLabelText('ชื่อผู้ตอบรับ'), { target: { value: 'คุณใหม่' } });
+  fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
+  expect(await screen.findByText(/บันทึกคำตอบแล้ว/)).toBeInTheDocument();
+  expect(fetch).toHaveBeenCalledWith('/api/rsvp', expect.objectContaining({ body: expect.stringContaining('คุณใหม่') }));
 });

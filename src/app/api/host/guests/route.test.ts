@@ -53,7 +53,7 @@ describe('host guests route', () => {
     mocks.recordAudit.mockResolvedValue(undefined);
   });
 
-  it('creates one invitation and returns its one-time link', async () => {
+  it('creates a guest without returning a personal invitation link', async () => {
     const response = await POST(new Request('https://wedding.test/api/host/guests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -72,10 +72,9 @@ describe('host guests route', () => {
     const data = await response.json();
     expect(data).toMatchObject({
       imported: 1,
-      links: [{ displayName: 'ครอบครัวสุขใจ' }],
+
     });
-    expect(data.links[0].token).toMatch(/^[a-f0-9]{32}$/);
-    expect(data.links[0].inviteCode).toMatch(/^[A-F0-9]{6}$/);
+    expect(data).not.toHaveProperty('links');
 
     const [records] = mocks.createInvitations.mock.calls[0] as [NewInvitationRecord[]];
     expect(records).toHaveLength(1);

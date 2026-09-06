@@ -26,7 +26,7 @@ export type PublicInvitation = Pick<
   | 'tableNumbers'
 >;
 
-function toPublicInvitation(invitation: Invitation): PublicInvitation {
+export function toPublicInvitation(invitation: Invitation): PublicInvitation {
   return {
     inviteCode: invitation.inviteCode,
     displayName: invitation.displayName,

@@ -4,10 +4,8 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import {
   CalendarDays,
-  Heart,
   PartyPopper,
   Pencil,
-  QrCode,
 } from 'lucide-react';
 import { WEDDING } from '@/lib/domain/event';
 import type { PublicInvitation } from '@/lib/services/invitation-service';
@@ -63,15 +61,6 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
   );
   const galleryRoot = useRef<HTMLDivElement>(null);
   const calendarHref = personalized ? props.calendarLinks.google : props.calendarLink;
-
-  useEffect(() => {
-    if (!personalized || !invitation?.inviteCode) return;
-    try {
-      window.localStorage.setItem('np-wedding-invite-code', invitation.inviteCode);
-    } catch {
-      // The invitation remains usable when browser storage is unavailable.
-    }
-  }, [invitation?.inviteCode, personalized]);
 
   useEffect(() => {
     if (!('IntersectionObserver' in window)) return;
@@ -236,17 +225,10 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
                 ) : (
                   <RsvpForm token={props.token} initial={invitation} onSaved={(saved) => { setInvitation(saved); setEditing(false); }} />
                 )}
-                <aside className={styles.checkinNote}>
-                  <QrCode aria-hidden="true" />
-                  <p data-text-reveal>วันงานใช้ <strong>รหัสเชิญ {invitation.inviteCode}</strong> เพื่อเช็กอินด้วยตัวเอง</p>
-                </aside>
+
               </>
             ) : (
-              <div className={styles.publicRsvp}>
-                <Heart aria-hidden="true" />
-                <p data-text-reveal>กรุณาเปิดลิงก์คำเชิญส่วนตัวเพื่อส่งคำตอบ</p>
-                <small>ลิงก์ส่วนตัวช่วยให้เราจัดที่นั่งและดูแลแขกทุกคนได้อย่างพอดี</small>
-              </div>
+              <RsvpForm onSaved={() => {}} />
             )}
           </div>
         </section>

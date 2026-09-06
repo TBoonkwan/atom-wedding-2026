@@ -29,7 +29,7 @@ export function RsvpForm({
   initial,
   onSaved,
 }: {
-  token: string;
+  token?: string;
   initial?: PublicInvitation;
   onSaved: (invitation: PublicInvitation) => void;
 }) {
@@ -48,6 +48,9 @@ export function RsvpForm({
         }
       : emptyInput,
   );
+  const [name, setName] = useState('');
+  const [submissionId, setSubmissionId] = useState('');
+  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [showGift, setShowGift] = useState(false);
@@ -66,16 +69,20 @@ export function RsvpForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving || saved) return;
+    const id = submissionId || crypto.randomUUID();
+    setSubmissionId(id);
     setSaving(true);
     setMessage('');
     try {
-      const response = await fetch(`/api/invitations/${encodeURIComponent(token)}`, {
+      const response = await fetch(token ? `/api/invitations/${encodeURIComponent(token)}` : '/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify(token ? input : { ...input, name, submissionId: id }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'บันทึกไม่สำเร็จ');
+      if (!token) setSaved(true);
       onSaved(data);
       setMessage('บันทึกคำตอบแล้ว ขอบคุณมากนะ 💗');
     } catch (error) {
@@ -85,8 +92,11 @@ export function RsvpForm({
     }
   }
 
+  if (saved) return <div className="rsvp-summary" role="status"><Heart size={28} /><h3>บันทึกคำตอบแล้ว ขอบคุณมากนะ 💗</h3><p>{name}</p></div>;
+
   return (
     <form className="rsvp-form" onSubmit={submit}>
+      {!token ? <label>ชื่อผู้ตอบรับ<input name="name" autoComplete="name" required maxLength={160} value={name} onChange={event => setName(event.target.value)} /></label> : null}
       <div className="rsvp-choice-grid" aria-label="เลือกคำตอบ RSVP">
         {choices.map(({ status, label, icon: Icon }) => (
           <button
@@ -122,7 +132,7 @@ export function RsvpForm({
       ) : (
         <div className="form-stack">
           <label>บอกเหตุผลให้เราทราบ (ไม่บังคับ)<textarea aria-label="บอกเหตุผลให้เราทราบ" value={input.reason} onChange={(event) => setInput((current) => ({ ...current, reason: event.target.value }))} /></label>
-          {input.status === 'rejected' ? (
+          {input.status === 'rejected' && token ? (
             <div className="gift-card">
               <Heart size={20} />
               <p>มาไม่ได้ไม่เป็นไร ส่งใจมาแทนก็ได้ 😆</p>

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { WeddingRepository } from './repository';
@@ -306,8 +307,17 @@ export class DemoRepository implements WeddingRepository {
   }
 
   async createInvitations(records: NewInvitationRecord[]) {
-    const created = records.map((record, index): Invitation => ({
-      id: `imported-${Date.now()}-${index}`,
+    const hashes = new Set(this.tokenHashes.values());
+    const codes = new Set(this.invitations.map(item => item.inviteCode));
+    for (const record of records) {
+      if (hashes.has(record.tokenHash) || codes.has(record.inviteCode)) {
+        throw new Error('คำเชิญนี้มีอยู่แล้ว');
+      }
+      hashes.add(record.tokenHash);
+      codes.add(record.inviteCode);
+    }
+    const created = records.map((record): Invitation => ({
+      id: `imported-${randomUUID()}`,
       inviteCode: record.inviteCode,
       displayName: record.displayName,
       contactName: record.contactName,
@@ -322,10 +332,25 @@ export class DemoRepository implements WeddingRepository {
       lateResponse: false,
       checkedInCount: 0,
       tableNumbers: [],
+      ...(record.rsvp ? {
+        ...record.rsvp,
+        adultCount: record.rsvp.status === 'accepted' ? record.rsvp.adultCount : 0,
+        childCount: record.rsvp.status === 'accepted' ? record.rsvp.childCount : 0,
+        childSeatCount: record.rsvp.status === 'accepted' ? record.rsvp.childSeatCount : 0,
+        lateResponse: record.lateResponse ?? false,
+        updatedAt: new Date().toISOString(),
+      } : {}),
     }));
     this.invitations.push(...created);
     created.forEach((invitation, index) => {
       this.tokenHashes.set(invitation.id, records[index].tokenHash);
+      if (records[index].rsvp) {
+        this.rsvpHistory.unshift({
+          id: randomUUID(), invitationId: invitation.id, source: 'guest',
+          snapshot: { ...records[index].rsvp, adultCount: invitation.adultCount, childCount: invitation.childCount, childSeatCount: invitation.childSeatCount, lateResponse: invitation.lateResponse },
+          createdAt: invitation.updatedAt!,
+        });
+      }
     });
     this.persist();
     return structuredClone(created);

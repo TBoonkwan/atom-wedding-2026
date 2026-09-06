@@ -160,6 +160,7 @@ export class SupabaseRepository implements WeddingRepository {
           phone: record.phone || null,
           email: record.email || null,
           host_notes: record.hostNotes || null,
+          ...(record.rsvp ? toDbRsvp(record.rsvp, record.lateResponse ?? false) : {}),
         })),
       )
       .select('*');

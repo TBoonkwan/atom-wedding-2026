@@ -1,3 +1,4 @@
+import type { RsvpInput } from '@/lib/domain/types';
 import { randomBytes } from 'node:crypto';
 import type { GuestImportRow } from '@/lib/domain/csv';
 import { hashToken } from '@/lib/domain/security';
@@ -5,6 +6,8 @@ import { hashToken } from '@/lib/domain/security';
 export interface NewInvitationRecord extends GuestImportRow {
   inviteCode: string;
   tokenHash: string;
+  rsvp?: RsvpInput;
+  lateResponse?: boolean;
 }
 
 export function prepareGuestInvitations(

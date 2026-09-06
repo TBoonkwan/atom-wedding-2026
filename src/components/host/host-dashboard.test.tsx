@@ -95,3 +95,13 @@ describe('HostDashboard guest and table workflows', () => {
     expect(within(emptyMaybeRow).getAllByRole('cell')[2]).toHaveTextContent('—');
   });
 });
+
+it('offers a shared invitation link and no check-in workflow', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+  const writeText = vi.fn().mockResolvedValue(undefined);
+  vi.stubGlobal('navigator', { clipboard: { writeText } });
+  render(<HostDashboard email="demo@local" demo />);
+  fireEvent.click(screen.getByRole('button', { name: 'คัดลอกลิงก์กลาง' }));
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/`));
+  expect(screen.queryByRole('button', { name: 'เช็กอิน' })).not.toBeInTheDocument();
+});

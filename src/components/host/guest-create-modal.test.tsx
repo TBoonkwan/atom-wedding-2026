@@ -13,12 +13,12 @@ describe('GuestCreateModal', () => {
 
     expect(screen.getByLabelText('ชื่อบนคำเชิญ')).toBeRequired();
     expect(screen.getByLabelText('ชื่อผู้ติดต่อ')).toBeRequired();
-    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขกและสร้างลิงก์' }));
+    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขก' }));
 
     expect(request).not.toHaveBeenCalled();
   });
 
-  it('submits guest details and hands the one-time link to the dashboard', async () => {
+  it('submits guest details and refreshes the dashboard', async () => {
     const link = {
       displayName: 'ครอบครัวสุขใจ',
       inviteCode: 'ABC123',
@@ -41,9 +41,9 @@ describe('GuestCreateModal', () => {
     fireEvent.change(screen.getByLabelText('โทรศัพท์'), { target: { value: '0812345678' } });
     fireEvent.change(screen.getByLabelText('อีเมล'), { target: { value: 'a@example.com' } });
     fireEvent.change(screen.getByLabelText('โน้ต host'), { target: { value: 'เพื่อนเจ้าบ่าว' } });
-    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขกและสร้างลิงก์' }));
+    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขก' }));
 
-    await waitFor(() => expect(onCreated).toHaveBeenCalledWith([link]));
+    await waitFor(() => expect(onCreated).toHaveBeenCalledWith());
     expect(request).toHaveBeenCalledWith('/api/host/guests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -74,7 +74,7 @@ describe('GuestCreateModal', () => {
       target: { value: 'ครอบครัวซ้ำ' },
     });
     fireEvent.change(screen.getByLabelText('ชื่อผู้ติดต่อ'), { target: { value: 'คุณซ้ำ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขกและสร้างลิงก์' }));
+    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขก' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('email หรือโทรศัพท์มีอยู่ในระบบแล้ว');
     expect(screen.getByLabelText('ชื่อบนคำเชิญ')).toHaveValue('ครอบครัวซ้ำ');
@@ -91,7 +91,7 @@ describe('GuestCreateModal', () => {
       target: { value: 'ครอบครัวออฟไลน์' },
     });
     fireEvent.change(screen.getByLabelText('ชื่อผู้ติดต่อ'), { target: { value: 'คุณออฟไลน์' } });
-    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขกและสร้างลิงก์' }));
+    fireEvent.click(screen.getByRole('button', { name: 'เพิ่มแขก' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('เชื่อมต่อระบบไม่สำเร็จ');
     expect(onClose).not.toHaveBeenCalled();

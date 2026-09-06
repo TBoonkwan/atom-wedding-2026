@@ -9,12 +9,12 @@ export async function GET() {
     const invitations = await getRepository().listInvitations();
     const header = [
       'display_name', 'contact_name', 'status', 'adults', 'children', 'child_seats',
-      'checked_in', 'tables', 'beer', 'dietary_notes', 'accessibility_notes',
+      'tables', 'beer', 'dietary_notes', 'accessibility_notes',
       'song_request', 'reason', 'phone', 'email', 'host_notes', 'late_response',
     ];
     const rows = invitations.map((item) => [
       item.displayName, item.contactName, item.status, item.adultCount, item.childCount,
-      item.childSeatCount, item.checkedInCount, item.tableNumbers.join('|'),
+      item.childSeatCount, item.tableNumbers.join('|'),
       item.beerPreference, item.dietaryNotes, item.accessibilityNotes, item.songRequest,
       item.reason, item.phone, item.email, item.hostNotes, String(item.lateResponse),
     ]);

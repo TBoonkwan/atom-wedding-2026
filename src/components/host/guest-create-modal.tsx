@@ -3,15 +3,11 @@
 import { useState, type FormEvent } from 'react';
 import { Plus, XCircle } from 'lucide-react';
 
-export interface ImportedLink {
-  displayName: string;
-  inviteCode: string;
-  token: string;
-}
+
 
 interface GuestCreateModalProps {
   onClose: () => void;
-  onCreated: (links: ImportedLink[]) => Promise<void> | void;
+  onCreated: () => Promise<void> | void;
 }
 
 interface GuestForm {
@@ -54,7 +50,7 @@ export function GuestCreateModal({ onClose, onCreated }: GuestCreateModalProps) 
         setError(data.errors?.join(' · ') ?? data.error ?? 'เพิ่มแขกไม่สำเร็จ');
         return;
       }
-      await onCreated(data.links ?? []);
+      await onCreated();
       onClose();
     } catch {
       setError('เชื่อมต่อระบบไม่สำเร็จ กรุณาลองใหม่');
@@ -76,7 +72,7 @@ export function GuestCreateModal({ onClose, onCreated }: GuestCreateModalProps) 
           <XCircle />
         </button>
         <h2>เพิ่มแขก</h2>
-        <p className="modal-help">ระบบจะสร้างรหัสและลิงก์เชิญให้ทันทีหลังบันทึก</p>
+        <p className="modal-help">แขกทุกคนใช้ลิงก์กลางเพื่อกรอกชื่อและตอบรับ</p>
         <label>
           ชื่อบนคำเชิญ
           <input
@@ -125,7 +121,7 @@ export function GuestCreateModal({ onClose, onCreated }: GuestCreateModalProps) 
         </label>
         {error ? <p className="form-error" role="alert">{error}</p> : null}
         <button className="host-primary-button" disabled={submitting}>
-          <Plus size={17} /> {submitting ? 'กำลังเพิ่มแขก...' : 'เพิ่มแขกและสร้างลิงก์'}
+          <Plus size={17} /> {submitting ? 'กำลังเพิ่มแขก...' : 'เพิ่มแขก'}
         </button>
       </form>
     </div>

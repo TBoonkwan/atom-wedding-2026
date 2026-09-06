@@ -1,6 +1,6 @@
 # NP Wedding — Landing Page & RSVP Dashboard
 
-Standalone Next.js/TypeScript application for the 4 December 2026 wedding at Celebce Venue. It includes a public wedding experience, tokenized guest invitations, RSVP, calendar files, a host dashboard, table planning, and self check-in.
+Standalone Next.js/TypeScript application for the 4 December 2026 wedding at Celebce Venue. It includes a public wedding experience, a shared invitation link with name-only RSVP, calendar files, a host dashboard, and table planning.
 
 ## Preview locally
 
@@ -13,9 +13,9 @@ npm run dev
 Open `http://localhost:3000`. With Supabase variables left empty, guest and host data use a local demo repository:
 
 - `/` — public wedding experience without RSVP
-- `/invitation/[token]` — personalized guest invitation and RSVP
+- `/invitation/[token]` — legacy personalized invitations continue to work
 - `/host` — host dashboard
-- `/check-in?eventCode=NP-AT-VENUE` — venue self check-in
+- `/check-in` — redirects to the shared invitation; check-in APIs are retired (410)
 
 In development, demo data is stored in the ignored file `.data/demo-repository.json`, so newly created guests, RSVP updates, and invitation-token hashes survive dev-server restarts. Raw invitation tokens are never written to that file. To reset only local demo data, stop the dev server, move `.data/demo-repository.json` to a backup location, and restart. Production must use Supabase rather than demo storage.
 
@@ -46,7 +46,7 @@ Use `public/guest-import-template.csv` or upload a CSV from the dashboard with t
 display_name,contact_name,phone,email,host_notes
 ```
 
-The import response creates an opaque token and six-character invite code for each row. The dashboard displays those links once and provides a CSV download. Store that file securely; only token hashes are persisted.
+Use **คัดลอกลิงก์กลาง** in the host dashboard to share `/` with every guest. Guests enter their name and RSVP without verification or check-in. Each submission creates a separate guest record, including names that match existing guests; it never overwrites a record by name. Retrying a failed request within the same form is idempotent. Reloading the page starts a new response. CSV import and manual guest creation remain available for host planning, but no longer return individual invitation links. Public RSVP creates the name and response together in one insert. Apply `supabase/migrations/202609050001_public_rsvp_history.sql` before deploying so the initial response history is recorded atomically with the guest.
 
 ## Deploy to Vercel
 
