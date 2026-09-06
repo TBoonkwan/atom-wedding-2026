@@ -157,3 +157,21 @@ describe('WeddingGallery', () => {
       .toHaveAttribute('sizes', '(max-width: 720px) calc(100vw - 44px), 940px');
   });
 });
+
+it('supports supplied photos, swipe navigation, and restores focus to a custom trigger', () => {
+  render(<WeddingGallery images={[
+    { src: '/one.webp', alt: 'First', width: 1800, height: 1200 },
+    { src: '/two.webp', alt: 'Second', width: 1200, height: 1800 },
+  ]} renderGallery={(open) => <button onClick={e => open(0, e.currentTarget)}>View photo</button>} />);
+  const trigger = screen.getByRole('button', { name: 'View photo' });
+  fireEvent.click(trigger);
+  const dialog = screen.getByRole('dialog');
+  expect(within(dialog).getByRole('img')).toHaveAttribute('width', '1800');
+  const figure = within(dialog).getByRole('img').parentElement!;
+  fireEvent.touchStart(figure, { touches: [{ clientX: 200, clientY: 100 }] });
+  fireEvent.touchEnd(figure, { changedTouches: [{ clientX: 80, clientY: 105 }] });
+  expect(dialog).toHaveTextContent('2 / 2');
+  fireEvent.keyDown(document, { key: 'Escape' });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(trigger).toHaveFocus();
+});

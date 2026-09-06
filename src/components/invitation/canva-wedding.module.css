@@ -165,3 +165,70 @@
 @media (prefers-reduced-motion: reduce) { .playButton { transition: none; } }
 
 .sectionArtwork { display: block; width: 100%; height: auto; }
+
+.photoButton { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; cursor: zoom-in; transition: transform 220ms ease; }
+.portraitGrid .photoButton { height: 100%; }
+.photoButton:active { transform: scale(.98); }
+.photoButton:focus-visible { outline: 3px solid #b49581; outline-offset: -4px; }
+@media (prefers-reduced-motion: reduce) { .photoButton { transition: none; } .photoButton:active { transform: none; } }
+
+/* Keep photos visible without JavaScript; animate only on their first entry. */
+@keyframes photoReveal {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .viewport [data-scroll-revealed] {
+    animation: photoReveal 650ms cubic-bezier(.22, 1, .36, 1) backwards;
+  }
+  .portraitGrid [data-scroll-revealed]:nth-child(3n + 2),
+  .editorialGrid [data-scroll-revealed]:nth-child(2n) { animation-delay: 70ms; }
+  .portraitGrid [data-scroll-revealed]:nth-child(3n) { animation-delay: 140ms; }
+}
+
+@keyframes textReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .viewport [data-text-reveal][data-scroll-revealed] {
+    animation: textReveal 650ms cubic-bezier(.22, 1, .36, 1) var(--text-delay, 80ms) backwards;
+  }
+}
+.youtubeMusic { width: min(100%, 400px); margin: 22px auto 0; }
+.youtubeMusic iframe { display: block; width: 100%; height: 225px; border: 0; border-radius: 12px; }
+.youtubeMusic a { display: inline-block; margin-top: 10px; color: inherit; font-size: .85rem; }
+
+.scheduleScroll { padding: 8px 0 18px; }
+.scheduleText { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; min-width: 0; padding: 0; margin: 0; list-style: none; color: #5d5d5d; text-align: center; }
+.scheduleText li { position: relative; min-width: 0; }
+.scheduleText li:not(:last-child)::after { content: ''; position: absolute; top: 44px; left: calc(50% + 44px); width: calc(100% - 76px); border-top: 1px dashed #a7a9aa; }
+.scheduleIcon { display: block; width: 88px; height: 88px; margin: 0 auto 22px; border-radius: 50%; background-image: url('/canva-wedding/media/timing.png'); background-size: 1422.222% auto; background-position: 9.82% 24.62%; }
+.scheduleIcon[data-icon="1"] { background-position-x: 26.21%; }
+.scheduleIcon[data-icon="2"] { background-position-x: 41.91%; }
+.scheduleIcon[data-icon="3"] { background-position-x: 58.09%; }
+.scheduleIcon[data-icon="4"] { background-position-x: 74.58%; }
+.scheduleIcon[data-icon="5"] { background-position-x: 91.65%; }
+.scheduleText h3 { margin: 0 0 8px; font-family: 'Thonburi', var(--thai); font-size: clamp(20px, 1.9vw, 27px); font-weight: 400; white-space: nowrap; letter-spacing: -.06em; }
+.scheduleText time { font-size: 19px; font-weight: 300; }
+.scheduleText p { margin: 0; font-family: Arial, sans-serif; font-size: clamp(15px, 1.5vw, 21px); font-weight: 300; line-height: 1.12; }
+.locationText { padding: 0 6% 42px; color: #555; }
+.locationText h2 { margin: 0 0 24px; font-size: clamp(2.8rem, 7vw, 5rem); font-style: italic; font-weight: 400; color: #553620; }
+.locationText p { margin: 4px 0; font-size: clamp(1.1rem, 2.5vw, 2rem); line-height: 1.5; }
+.locationText strong { font-style: italic; }
+.locationText sup { font-size: .6em; }
+
+
+.scheduleText time[data-text-reveal] { display: inline-block; }
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .scheduleText { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 32px; }
+  .scheduleText li:nth-child(3)::after { display: none; }
+}
+@media (max-width: 720px) {
+  .scheduleText { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 12px; }
+  .scheduleText li:nth-child(2n)::after { display: none; }
+  .scheduleText h3 { font-size: clamp(16px, 4vw, 22px); white-space: normal; letter-spacing: -.04em; }
+  .scheduleText time { font-size: 17px; }
+  .scheduleText p { font-size: clamp(12px, 3vw, 16px); overflow-wrap: anywhere; }
+}

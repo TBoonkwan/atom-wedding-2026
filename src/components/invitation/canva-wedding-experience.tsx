@@ -7,12 +7,11 @@ import {
   Heart,
   PartyPopper,
   Pencil,
-  Play,
   QrCode,
 } from 'lucide-react';
 import { WEDDING } from '@/lib/domain/event';
 import type { PublicInvitation } from '@/lib/services/invitation-service';
-import { AmbientMusic, type AmbientMusicHandle } from './ambient-music';
+import { WeddingGallery } from './wedding-gallery';
 import { Countdown } from './countdown';
 import { RsvpForm } from './rsvp-form';
 import styles from './canva-wedding.module.css';
@@ -62,7 +61,7 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
   const [editing, setEditing] = useState(
     personalized ? props.initialInvitation.status === 'pending' : false,
   );
-  const musicRef = useRef<AmbientMusicHandle>(null);
+  const galleryRoot = useRef<HTMLDivElement>(null);
   const calendarHref = personalized ? props.calendarLinks.google : props.calendarLink;
 
   useEffect(() => {
@@ -74,9 +73,28 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
     }
   }, [invitation?.inviteCode, personalized]);
 
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver(entries => {
+      let textOrder = 0;
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        if (entry.target instanceof HTMLElement && entry.target.hasAttribute('data-text-reveal')) {
+          entry.target.style.setProperty('--text-delay', `${80 + (textOrder % 4) * 110}ms`);
+          textOrder += 1;
+        }
+        entry.target.setAttribute('data-scroll-revealed', '');
+        observer.unobserve(entry.target);
+      }
+    }, { threshold: 0.08 });
+
+    galleryRoot.current?.querySelectorAll('[data-photo-reveal], [data-section-reveal], [data-text-reveal]').forEach(photo => observer.observe(photo));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className={styles.viewport}>
-      <AmbientMusic ref={musicRef} />
+    <div className={styles.viewport} data-gallery-root ref={galleryRoot}>
       <main className={styles.invitation}>
         <section className={styles.hero} aria-labelledby="wedding-couple">
           <Image
@@ -91,40 +109,38 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
           <div className={styles.heroFade} aria-hidden="true" />
         </section>
 
-        <section className={styles.namesBlock}>
+        <section data-section-reveal className={styles.namesBlock}>
           {personalized && invitation ? (
-            <p className={styles.invitedName}>เรียนเชิญ {invitation.displayName}</p>
+            <p data-text-reveal className={styles.invitedName}>เรียนเชิญ {invitation.displayName}</p>
           ) : (
-            <p className={styles.invitedName}>ขอเรียนเชิญร่วมเป็นเกียรติในวันของเรา</p>
+            <p data-text-reveal className={styles.invitedName}>ขอเรียนเชิญร่วมเป็นเกียรติในวันของเรา</p>
           )}
-          <h1 id="wedding-couple">Nathapol &amp; Pennisut</h1>
-          <p className={styles.tagline}>let&apos;s it be me · with lovely</p>
-          <div className={styles.musicRow}>
-            <span>♡</span>
-            <button type="button" className={styles.playButton} onClick={() => musicRef.current?.start()} aria-label="เปิดเพลงคลอ">
-              <Play size={22} fill="currentColor" />
-            </button>
-            <span>♡</span>
-          </div>
+          <h1 data-text-reveal id="wedding-couple">Nathapol &amp; Pennisut</h1>
+          <p data-text-reveal className={styles.tagline}>let&apos;s it be me · with lovely</p>
+
         </section>
 
-        <section className={styles.countdownSection}>
-          <a className={styles.dateLink} href={calendarHref} target="_blank" rel="noreferrer">save the date · 04.12.2026</a>
+        <section data-section-reveal className={styles.countdownSection}>
+          <a data-text-reveal className={styles.dateLink} href={calendarHref} target="_blank" rel="noreferrer">save the date · 04.12.2026</a>
           <Countdown />
         </section>
 
-        <section className={styles.portraitGrid} aria-label="ภาพพรีเวดดิ้ง">
+        <WeddingGallery images={portraitGallery} renderGallery={open => (
+        <section data-section-reveal className={styles.portraitGrid} aria-label="ภาพพรีเวดดิ้ง">
           {portraitGallery.map((photo, index) => (
-            <figure key={photo.src}>
+            <figure data-photo-reveal key={photo.src}>
+              <button type="button" className={styles.photoButton} aria-label={`เปิดภาพ: ${photo.alt}`} onClick={e => open(index, e.currentTarget)}>
               <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes="(max-width: 1366px) 33vw, 440px" loading={index < 3 ? 'eager' : 'lazy'} unoptimized={index === 0} />
+              </button>
             </figure>
           ))}
         </section>
+        )} />
 
-        <section className={styles.timelineSection} aria-labelledby="timeline-heading">
-          <p className={styles.scriptLabel}>timing of the day</p>
+        <section data-section-reveal className={styles.timelineSection} aria-labelledby="timeline-heading">
+          <p data-text-reveal className={styles.scriptLabel}>timing of the day</p>
           <h2 id="timeline-heading">timing of the day</h2>
-          <p className={styles.dateCaption}>2026.12.04</p>
+          <p data-text-reveal className={styles.dateCaption}>2026.12.04</p>
           <Image
             className={styles.sectionArtwork}
             src={`${media}/timing.png`}
@@ -135,16 +151,13 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
           />
         </section>
 
-        <section className={styles.locationSection} aria-labelledby="location-heading">
-          <h2 id="location-heading" className={styles.srOnly}>location</h2>
-          <Image
-            className={styles.sectionArtwork}
-            src={`${media}/location.png`}
-            alt="Location: Celebce Venue Bangkok วันที่ 4 ธันวาคม 2026 เวลา 15.00 น. ตามภาพคำเชิญ"
-            width={2146}
-            height={732}
-            sizes="(max-width: 1366px) 100vw, 1366px"
-          />
+        <section data-section-reveal className={styles.locationSection} aria-labelledby="location-heading">
+          <div className={styles.locationText}>
+            <h2 data-text-reveal id="location-heading">location</h2>
+            <p data-text-reveal>are delighted to invite you to their wedding</p>
+            <p data-text-reveal>friday 4<sup>th</sup> december 2026 at <strong>celebce venue bangkok</strong></p>
+            <p data-text-reveal><time dateTime="2026-12-04T15:00:00+07:00">15.00 น.</time></p>
+          </div>
           <div className={styles.venueCard}>
             <Image className={styles.venuePhoto} src={`${media}/ee63bec71ca1611e34458fe6ad4ccd71.png`} alt="Celebce Venue" width={1685} height={1839} sizes="(max-width: 720px) 100vw, 1000px" />
             <a className={styles.qrLink} href={WEDDING.mapUrl} target="_blank" rel="noreferrer" aria-label={`เปิดแผนที่ ${WEDDING.venue}`}>
@@ -153,12 +166,12 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
           </div>
         </section>
 
-        <section className={styles.dressSection} aria-labelledby="dress-heading">
+        <section data-section-reveal className={styles.dressSection} aria-labelledby="dress-heading">
           <div className={styles.dressCard}>
             <h2 id="dress-heading" className={styles.srOnly}>dress code theme</h2>
             <div className={styles.srOnly}>
-              <p>strictly formal</p>
-              <p>กรุณาแต่งกายด้วยชุดสุภาพในโทนสีน้ำตาลและเบจ</p>
+              <p data-text-reveal>strictly formal</p>
+              <p data-text-reveal>กรุณาแต่งกายด้วยชุดสุภาพในโทนสีน้ำตาลและเบจ</p>
               <ul>
                 <li>deep mocha</li>
                 <li>taupe brown</li>
@@ -178,35 +191,40 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
           </div>
         </section>
 
-        <section className={styles.editorialSection} aria-label="ภาพความทรงจำของคู่บ่าวสาว">
+        <WeddingGallery images={editorialGallery} renderGallery={open => (
+        <section data-section-reveal className={styles.editorialSection} aria-label="ภาพความทรงจำของคู่บ่าวสาว">
           <div className={styles.editorialGrid}>
-            {editorialGallery.map((photo) => (
-              <figure key={photo.src} className={'wide' in photo && photo.wide ? styles.widePhoto : undefined}>
+            {editorialGallery.map((photo, index) => (
+              <figure data-photo-reveal key={photo.src} className={'wide' in photo && photo.wide ? styles.widePhoto : undefined}>
+                <button type="button" className={styles.photoButton} aria-label={`เปิดภาพ: ${photo.alt}`} onClick={e => open(index, e.currentTarget)}>
                 <Image src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} sizes={('wide' in photo && photo.wide) ? '(max-width: 720px) 100vw, 1366px' : '(max-width: 720px) 50vw, 650px'} />
+                </button>
               </figure>
             ))}
           </div>
         </section>
 
-        <section className={styles.rsvpSection} id="rsvp" aria-label="ตอบรับคำเชิญ">
+        )} />
+
+        <section data-section-reveal className={styles.rsvpSection} id="rsvp" aria-label="ตอบรับคำเชิญ">
           <div className={styles.rsvpBackdrop} aria-hidden="true">
             <Image src={`${photos}/rings-silhouette.webp`} alt="" width={1081} height={952} sizes="(max-width: 720px) 100vw, 1366px" />
           </div>
           <div className={styles.rsvpContent}>
-            <p className={styles.rsvpTitle}>RSVP</p>
-            <p className={styles.rsvpDeadline}>kindly reply by<br /><time dateTime="2026-11-27">27.11.2026</time></p>
+            <p data-text-reveal className={styles.rsvpTitle}>RSVP</p>
+            <p data-text-reveal className={styles.rsvpDeadline}>kindly reply by<br /><time dateTime="2026-11-27">27.11.2026</time></p>
             {personalized && invitation ? (
               <>
                 {invitation.status !== 'pending' && !editing ? (
                   <div className="rsvp-summary">
                     <PartyPopper size={34} />
                     <h3>{invitation.status === 'accepted' ? 'ดีใจที่จะได้เจอกัน!' : 'เราเก็บคำตอบไว้แล้ว'}</h3>
-                    <p>{invitation.status === 'accepted' ? `มาร่วมงาน ${invitation.adultCount + invitation.childCount} คน` : invitation.status === 'maybe' ? 'ยังไม่แน่ใจ' : 'ไม่สะดวกมาร่วม'}</p>
-                    {invitation.tableNumbers.length > 0 ? <p className={styles.tableBadge}>โต๊ะ {invitation.tableNumbers.join(', ')}</p> : null}
+                    <p data-text-reveal>{invitation.status === 'accepted' ? `มาร่วมงาน ${invitation.adultCount + invitation.childCount} คน` : invitation.status === 'maybe' ? 'ยังไม่แน่ใจ' : 'ไม่สะดวกมาร่วม'}</p>
+                    {invitation.tableNumbers.length > 0 ? <p data-text-reveal className={styles.tableBadge}>โต๊ะ {invitation.tableNumbers.join(', ')}</p> : null}
                     {invitation.status === 'accepted' ? (
                       <div className="accepted-calendar">
                         <CalendarDays size={28} />
-                        <div><p>save the date</p><h4>เพิ่มลงปฏิทินไว้เลย</h4></div>
+                        <div><p data-text-reveal>save the date</p><h4>เพิ่มลงปฏิทินไว้เลย</h4></div>
                         <div className="calendar-actions">
                           <a className="secondary-button" href={props.calendarLinks.google} target="_blank" rel="noreferrer">Google Calendar</a>
                           <a className="secondary-button" href={props.calendarLinks.ics}>Apple / Outlook</a>
@@ -220,20 +238,20 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
                 )}
                 <aside className={styles.checkinNote}>
                   <QrCode aria-hidden="true" />
-                  <p>วันงานใช้ <strong>รหัสเชิญ {invitation.inviteCode}</strong> เพื่อเช็กอินด้วยตัวเอง</p>
+                  <p data-text-reveal>วันงานใช้ <strong>รหัสเชิญ {invitation.inviteCode}</strong> เพื่อเช็กอินด้วยตัวเอง</p>
                 </aside>
               </>
             ) : (
               <div className={styles.publicRsvp}>
                 <Heart aria-hidden="true" />
-                <p>กรุณาเปิดลิงก์คำเชิญส่วนตัวเพื่อส่งคำตอบ</p>
+                <p data-text-reveal>กรุณาเปิดลิงก์คำเชิญส่วนตัวเพื่อส่งคำตอบ</p>
                 <small>ลิงก์ส่วนตัวช่วยให้เราจัดที่นั่งและดูแลแขกทุกคนได้อย่างพอดี</small>
               </div>
             )}
           </div>
         </section>
 
-        <footer className={styles.footer}><p>ณัฐพล &amp; เพ็ญพิสุทธิ์</p><span>04 · 12 · 2026</span></footer>
+        <footer className={styles.footer}><p data-text-reveal>ณัฐพล &amp; เพ็ญพิสุทธิ์</p><span>04 · 12 · 2026</span></footer>
       </main>
     </div>
   );

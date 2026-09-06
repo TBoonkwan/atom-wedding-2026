@@ -109,3 +109,9 @@ it('keeps the personalized RSVP submission and saved-state flow', async () => {
   expect(screen.getByText('โต๊ะ 8')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Google Calendar' })).toHaveAttribute('href', '#google');
 });
+
+it('keeps YouTube and its music controls out of the invitation', () => {
+  render(<CanvaWeddingExperience mode="public" calendarLink="#calendar" />);
+  expect(screen.queryByTitle('Let It Be — The Beatles')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'เปิดเพลงคลอ' })).not.toBeInTheDocument();
+});

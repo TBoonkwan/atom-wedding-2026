@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { ArrowLeft, ArrowRight, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 const galleryImages = [
@@ -24,14 +24,26 @@ const galleryImages = [
   },
 ] as const;
 
-export function WeddingGallery() {
+type GalleryImage = { src: string; alt: string; width?: number; height?: number };
+type WeddingGalleryProps = {
+  images?: readonly GalleryImage[];
+  renderGallery?: (open: (index: number, trigger: HTMLButtonElement) => void) => ReactNode;
+};
+
+export function WeddingGallery({ images = galleryImages, renderGallery }: WeddingGalleryProps = {}) {
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const openingButton = useRef<HTMLButtonElement | null>(null);
+  const [openingButton, setOpeningButton] = useState<HTMLButtonElement | null>(null);
   const closeButton = useRef<HTMLButtonElement | null>(null);
   const dialog = useRef<HTMLDivElement | null>(null);
   const reel = useRef<HTMLDivElement | null>(null);
   const wasOpen = useRef(false);
   const isOpen = activeIndex !== null;
+
+  const openGallery = useCallback((index: number, trigger: HTMLButtonElement) => {
+    setOpeningButton(trigger);
+    setActiveIndex(index);
+  }, []);
 
   const closeGallery = useCallback(() => {
     setActiveIndex(null);
@@ -41,26 +53,26 @@ export function WeddingGallery() {
     setActiveIndex((current) => (
       current === null
         ? null
-        : (current + direction + galleryImages.length) % galleryImages.length
+        : (current + direction + images.length) % images.length
     ));
-  }, []);
+  }, [images.length]);
 
   useEffect(() => {
     if (!isOpen) {
       if (wasOpen.current) {
         wasOpen.current = false;
-        openingButton.current?.focus();
+        openingButton?.focus();
       }
       return;
     }
     wasOpen.current = true;
     closeButton.current?.focus();
-  }, [isOpen]);
+  }, [isOpen, openingButton]);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const invitationRoot = reel.current?.closest<HTMLElement>('.invitation-theme') ?? null;
+    const invitationRoot = reel.current?.closest<HTMLElement>('.invitation-theme, [data-gallery-root]') ?? null;
     const previousInert = invitationRoot?.getAttribute('inert') ?? null;
     const previousOverflow = document.body.style.overflow;
     invitationRoot?.setAttribute('inert', '');
@@ -105,19 +117,19 @@ export function WeddingGallery() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [closeGallery, isOpen, move]);
 
-  const activeImage = activeIndex === null ? null : galleryImages[activeIndex];
+  const activeImage = activeIndex === null ? null : images[activeIndex];
 
   return (
     <>
-      <div className="gallery-reel" ref={reel}>
-        {galleryImages.map((image, index) => (
+      <div className={renderGallery ? undefined : 'gallery-reel'} ref={reel}>
+        {renderGallery ? renderGallery(openGallery) : images.map((image, index) => (
           <button
             className="gallery-card"
             type="button"
             key={image.src}
             aria-label={`เปิดภาพ ${index + 1}: ${image.alt}`}
             onClick={(event) => {
-              openingButton.current = event.currentTarget;
+              setOpeningButton(event.currentTarget);
               setActiveIndex(index);
             }}
           >
@@ -164,13 +176,30 @@ export function WeddingGallery() {
             >
               <ArrowLeft aria-hidden="true" />
             </button>
-            <figure className="gallery-lightbox-figure">
+            <figure className="gallery-lightbox-figure"
+              onTouchStart={event => {
+                const touch = event.touches.length === 1 ? event.touches[0] : null;
+                swipeStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+              }}
+              onTouchCancel={() => { swipeStart.current = null; }}
+              onTouchEnd={event => {
+                const start = swipeStart.current;
+                swipeStart.current = null;
+                const end = event.changedTouches[0];
+                if (!start || !end) return;
+                const dx = end.clientX - start.x;
+                const dy = end.clientY - start.y;
+                if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) move(dx < 0 ? 1 : -1);
+              }}
+            >
               <Image
+                key={activeImage.src}
                 className="gallery-lightbox-image"
                 src={activeImage.src}
                 alt={activeImage.alt}
-                width={1200}
-                height={1800}
+                width={activeImage.width ?? 1200}
+                height={activeImage.height ?? 1800}
+                unoptimized={activeImage.src.endsWith('.webp')}
                 sizes="(max-width: 720px) calc(100vw - 44px), 940px"
               />
             </figure>
@@ -183,7 +212,7 @@ export function WeddingGallery() {
               <ArrowRight aria-hidden="true" />
             </button>
             <p className="gallery-lightbox-count" aria-live="polite">
-              {activeIndex + 1} / {galleryImages.length}
+              {activeIndex + 1} / {images.length}
             </p>
           </div>
         </div>
