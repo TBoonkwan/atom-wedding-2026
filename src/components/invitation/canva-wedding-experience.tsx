@@ -60,7 +60,7 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
   const [editing, setEditing] = useState(
     personalized ? props.initialInvitation.status === 'pending' : false,
   );
-  const pageEnd = useRef<HTMLDivElement>(null);
+  const rsvpSection = useRef<HTMLElement>(null);
   const galleryRoot = useRef<HTMLDivElement>(null);
   const calendarHref = personalized ? props.calendarLinks.google : props.calendarLink;
 
@@ -197,38 +197,37 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
 
         )} />
 
-        <section data-section-reveal className={styles.rsvpSection} id="rsvp" aria-label="ตอบรับคำเชิญ">
+        <section ref={rsvpSection} data-section-reveal className={styles.rsvpSection} id="rsvp" aria-label="ตอบรับคำเชิญ">
           <div className={styles.rsvpBackdrop} aria-hidden="true">
             <Image src={`${photos}/rings-silhouette.webp`} alt="" width={1081} height={952} sizes="(max-width: 720px) 100vw, 1366px" />
           </div>
           <div className={styles.rsvpContent}>
             <p data-text-reveal className={styles.rsvpTitle}>RSVP</p>
             <p data-text-reveal className={styles.rsvpDeadline}>kindly reply by<br /><time dateTime="2026-11-27">27.11.2026</time></p>
-            <RsvpSheet endRef={pageEnd}>{onComplete => personalized && invitation ? (
-              <>
-                {invitation.status !== 'pending' && !editing ? (
-                  <div className="rsvp-summary">
-                    <PartyPopper size={34} />
-                    <h3>{invitation.status === 'accepted' ? 'ดีใจที่จะได้เจอกัน!' : 'เราเก็บคำตอบไว้แล้ว'}</h3>
-                    <p data-text-reveal>{invitation.status === 'accepted' ? `มาร่วมงาน ${invitation.adultCount + invitation.childCount} คน` : invitation.status === 'maybe' ? 'ยังไม่แน่ใจ' : 'ไม่สะดวกมาร่วม'}</p>
-                    {invitation.tableNumbers.length > 0 ? <p data-text-reveal className={styles.tableBadge}>โต๊ะ {invitation.tableNumbers.join(', ')}</p> : null}
-                    {invitation.status === 'accepted' ? (
-                      <div className="accepted-calendar">
-                        <CalendarDays size={28} />
-                        <div><p data-text-reveal>save the date</p><h4>เพิ่มลงปฏิทินไว้เลย</h4></div>
-                        <div className="calendar-actions">
-                          <a className="secondary-button" href={props.calendarLinks.google} target="_blank" rel="noreferrer">Google Calendar</a>
-                          <a className="secondary-button" href={props.calendarLinks.ics}>Apple / Outlook</a>
-                        </div>
-                      </div>
-                    ) : null}
-                    <button className="text-button" type="button" onClick={() => setEditing(true)}><Pencil size={16} /> แก้ไขคำตอบ</button>
+            {personalized && invitation && invitation.status !== 'pending' && !editing ? (
+              <div className="rsvp-summary">
+                <PartyPopper size={34} />
+                <h3>{invitation.status === 'accepted' ? 'ดีใจที่จะได้เจอกัน!' : 'เราเก็บคำตอบไว้แล้ว'}</h3>
+                <p data-text-reveal>{invitation.status === 'accepted' ? `มาร่วมงาน ${invitation.adultCount + invitation.childCount} คน` : invitation.status === 'maybe' ? 'ยังไม่แน่ใจ' : 'ไม่สะดวกมาร่วม'}</p>
+                {invitation.tableNumbers.length > 0 ? <p data-text-reveal className={styles.tableBadge}>โต๊ะ {invitation.tableNumbers.join(', ')}</p> : null}
+                {invitation.status === 'accepted' ? (
+                  <div className="accepted-calendar">
+                    <CalendarDays size={28} />
+                    <div><p data-text-reveal>save the date</p><h4>เพิ่มลงปฏิทินไว้เลย</h4></div>
+                    <div className="calendar-actions">
+                      <a className="secondary-button" href={props.calendarLinks.google} target="_blank" rel="noreferrer">Google Calendar</a>
+                      <a className="secondary-button" href={props.calendarLinks.ics}>Apple / Outlook</a>
+                    </div>
                   </div>
-                ) : (
-                  <RsvpForm token={props.token} initial={invitation} onSaved={(saved) => { setInvitation(saved); setEditing(false); onComplete(); }} />
-                )}
-
-              </>
+                ) : null}
+                <button className="text-button" type="button" onClick={() => setEditing(true)}><Pencil size={16} /> แก้ไขคำตอบ</button>
+              </div>
+            ) : null}
+            <RsvpSheet
+              targetRef={rsvpSection}
+              enabled={!personalized || !invitation || invitation.status === 'pending' || editing}
+            >{onComplete => personalized && invitation ? (
+              <RsvpForm token={props.token} initial={invitation} onSaved={(saved) => { setInvitation(saved); setEditing(false); onComplete(); }} />
             ) : (
               <RsvpForm onSaved={onComplete} />
             )}</RsvpSheet>
@@ -236,7 +235,6 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
         </section>
 
         <footer className={styles.footer}><p data-text-reveal>ณัฐพล &amp; เพ็ญพิสุทธิ์</p><span>04 · 12 · 2026</span></footer>
-        <div ref={pageEnd} data-rsvp-page-end style={{ height: 1 }} />
       </main>
     </div>
   );

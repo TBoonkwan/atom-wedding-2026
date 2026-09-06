@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Heart, X } from 'lucide-react';
 import styles from './rsvp-sheet.module.css';
 
-function Modal({ open, onClose, title, returnFocus, sheet = false, children }: {
+function Modal({ open, onClose, title, sheet = false, children }: {
   open: boolean;
   onClose: () => void;
   title: string;
-  returnFocus: RefObject<HTMLButtonElement | null>;
   sheet?: boolean;
   children: ReactNode;
 }) {
@@ -18,15 +17,14 @@ function Modal({ open, onClose, title, returnFocus, sheet = false, children }: {
     if (!open || !dialog) return;
     const previousOverflow = document.body.style.overflow;
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const focusTarget = returnFocus.current ?? previousFocus;
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
     document.body.style.overflow = 'hidden';
     return () => {
-      dialog.close();
+      if (dialog.open) dialog.close();
       document.body.style.overflow = previousOverflow;
-      focusTarget?.focus({ preventScroll: true });
+      previousFocus?.focus({ preventScroll: true });
     };
-  }, [open, returnFocus]);
+  }, [open]);
 
   return (
     <dialog ref={ref} className={sheet ? styles.sheet : styles.thanks} aria-label={title}
@@ -40,38 +38,46 @@ function Modal({ open, onClose, title, returnFocus, sheet = false, children }: {
   );
 }
 
-export function RsvpSheet({ endRef, children }: {
-  endRef: RefObject<HTMLDivElement | null>;
+export function RsvpSheet({ targetRef, enabled, children }: {
+  targetRef: RefObject<HTMLElement | null>;
+  enabled: boolean;
   children: (onComplete: () => void) => ReactNode;
 }) {
   const [view, setView] = useState<'form' | 'thanks' | null>(null);
-  const prompted = useRef(false);
-  const trigger = useRef<HTMLButtonElement>(null);
+  const [completed, setCompleted] = useState(false);
+  const wasEnabled = useRef(enabled);
 
   useEffect(() => {
-    const end = endRef.current;
-    if (!end || !('IntersectionObserver' in window)) return;
+    if (enabled && !wasEnabled.current) setCompleted(false);
+    wasEnabled.current = enabled;
+  }, [enabled]);
+
+  useEffect(() => {
+    const target = targetRef.current;
+    if (!enabled || !target || !('IntersectionObserver' in window)) return;
     const observer = new IntersectionObserver(entries => {
-      if (prompted.current || !entries.some(entry => entry.isIntersecting)) return;
-      prompted.current = true;
-      setView('form');
-      observer.disconnect();
-    }, { threshold: 1 });
-    observer.observe(end);
+      if (completed || !entries.some(entry => entry.isIntersecting)) return;
+      setView(current => current ?? 'form');
+    }, { threshold: 0.35 });
+    observer.observe(target);
     return () => observer.disconnect();
-  }, [endRef]);
+  }, [completed, enabled, targetRef]);
 
   function close() {
     setView(null);
   }
 
+  const complete = useCallback(() => {
+    setCompleted(true);
+    setView('thanks');
+  }, []);
+
   return (
     <>
-      <button ref={trigger} type="button" className="primary-button" onClick={() => { prompted.current = true; setView('form'); }}>ตอบรับคำเชิญ</button>
-      <Modal returnFocus={trigger} open={view === 'form'} onClose={close} title="ตอบรับคำเชิญ" sheet>
-        {children(() => setView('thanks'))}
+      <Modal open={view === 'form'} onClose={close} title="ตอบรับคำเชิญ" sheet>
+        {children(complete)}
       </Modal>
-      <Modal returnFocus={trigger} open={view === 'thanks'} onClose={close} title="ขอบคุณที่ตอบกลับ">
+      <Modal open={view === 'thanks'} onClose={close} title="ขอบคุณที่ตอบกลับ">
         <Heart size={36} aria-hidden="true" />
         <h2>ขอบคุณที่ตอบกลับ</h2>
         <p>บันทึกคำตอบของคุณเรียบร้อยแล้ว 💗</p>

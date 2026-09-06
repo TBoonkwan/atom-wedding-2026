@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import { DEMO_PUBLIC_INVITATION } from '@/lib/domain/demo';
 import { CanvaWeddingExperience } from './canva-wedding-experience';
@@ -12,6 +12,37 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
+
+function mockRsvpIntersection() {
+  const observers: Array<{
+    callback: IntersectionObserverCallback;
+    options?: IntersectionObserverInit;
+    targets: Element[];
+  }> = [];
+
+  vi.stubGlobal('IntersectionObserver', class {
+    targets: Element[] = [];
+
+    constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+      observers.push({ callback, options, targets: this.targets });
+    }
+
+    observe(target: Element) { this.targets.push(target); }
+    unobserve() {}
+    disconnect() {}
+  });
+
+  return (isIntersecting = true) => {
+    const target = document.querySelector('#rsvp')!;
+    const observer = observers.find(candidate => (
+      candidate.targets.includes(target) && candidate.options?.threshold === 0.35
+    ));
+    expect(observer).toBeDefined();
+    act(() => observer!.callback([
+      { target, isIntersecting } as IntersectionObserverEntry,
+    ], {} as IntersectionObserver));
+  };
+}
 
 it('renders the Canva-inspired public invitation with a named public RSVP form', () => {
   render(
@@ -28,9 +59,7 @@ it('renders the Canva-inspired public invitation with a named public RSVP form',
   expect(screen.getByRole('link', { name: 'เปิดแผนที่ Celebce Venue' }))
     .toHaveAttribute('href', expect.stringContaining('share.google'));
   expect(screen.getByRole('heading', { name: 'dress code theme' })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
-  expect(screen.getByLabelText('ชื่อผู้ตอบรับ')).toBeRequired();
-  expect(screen.getByRole('button', { name: 'ยืนยันคำตอบ' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'ตอบรับคำเชิญ' })).not.toBeInTheDocument();
 });
 
 it('renders the approved original photography and dress-code artwork', () => {
@@ -50,6 +79,7 @@ it('renders the approved original photography and dress-code artwork', () => {
 });
 
 it('renders the existing RSVP form inside the personalized Canva-inspired invitation', () => {
+  const triggerRsvp = mockRsvpIntersection();
   render(
     <CanvaWeddingExperience
       mode="personalized"
@@ -60,7 +90,7 @@ it('renders the existing RSVP form inside the personalized Canva-inspired invita
   );
 
   expect(screen.getByText(`เรียนเชิญ ${DEMO_PUBLIC_INVITATION.displayName}`)).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
+  triggerRsvp();
   const rsvp = screen.getByRole('dialog', { name: 'ตอบรับคำเชิญ' });
   expect(within(rsvp).getByRole('button', { name: 'มา' })).toBeInTheDocument();
   expect(within(rsvp).getByRole('button', { name: 'ยืนยันคำตอบ' })).toBeInTheDocument();
@@ -87,6 +117,7 @@ it('does not persist an invitation code or token for check-in', () => {
 });
 
 it('keeps the personalized RSVP submission and saved-state flow', async () => {
+  const triggerRsvp = mockRsvpIntersection();
   const savedInvitation = {
     ...DEMO_PUBLIC_INVITATION,
     status: 'accepted' as const,
@@ -107,14 +138,13 @@ it('keeps the personalized RSVP submission and saved-state flow', async () => {
     />,
   );
 
-  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
+  triggerRsvp();
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
 
   expect(await screen.findByRole('dialog', { name: 'ขอบคุณที่ตอบกลับ' })).toBeVisible();
   expect(screen.queryByRole('dialog', { name: 'ตอบรับคำเชิญ' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'ปิด' }));
-  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
-  await waitFor(() => expect(screen.getByText('ดีใจที่จะได้เจอกัน!')).toBeInTheDocument());
+  expect(screen.getByText('ดีใจที่จะได้เจอกัน!')).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledWith('/api/invitations/secure-token', expect.objectContaining({
     method: 'POST',
   }));
@@ -129,9 +159,10 @@ it('keeps YouTube and its music controls out of the invitation', () => {
 });
 
 it('submits a name from the shared link and shows confirmation', async () => {
+  const triggerRsvp = mockRsvpIntersection();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ...DEMO_PUBLIC_INVITATION, displayName: 'คุณใหม่', status: 'accepted' }) }));
   render(<CanvaWeddingExperience mode="public" calendarLink="#calendar" />);
-  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
+  triggerRsvp();
   fireEvent.change(screen.getByLabelText('ชื่อผู้ตอบรับ'), { target: { value: 'คุณใหม่' } });
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
   expect(await screen.findByRole('dialog', { name: 'ขอบคุณที่ตอบกลับ' })).toBeVisible();
@@ -139,36 +170,27 @@ it('submits a name from the shared link and shows confirmation', async () => {
 });
 
 
-it('opens once at the page end, preserves a draft, and can reopen manually', () => {
-  const observers: { callback: IntersectionObserverCallback; targets: Element[] }[] = [];
-  vi.stubGlobal('IntersectionObserver', class {
-    targets: Element[] = [];
-    constructor(callback: IntersectionObserverCallback) { observers.push({ callback, targets: this.targets }); }
-    observe(target: Element) { this.targets.push(target); }
-    unobserve() {}
-    disconnect() {}
-  });
+it('opens the form when the RSVP section enters view and preserves a draft after returning', () => {
+  const triggerRsvp = mockRsvpIntersection();
   render(<CanvaWeddingExperience mode="public" calendarLink="#calendar" />);
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  const end = document.querySelector('[data-rsvp-page-end]')!;
-  const observer = observers.find(o => o.targets.includes(end))!;
-  expect(observer).toBeDefined();
-  fireEvent.scroll(window);
-  // The browser reports the bottom sentinel entering the viewport.
-  act(() => observer.callback([{ target: end, isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
+  expect(screen.queryByRole('button', { name: 'ตอบรับคำเชิญ' })).not.toBeInTheDocument();
+  triggerRsvp();
   expect(screen.getByRole('dialog', { name: 'ตอบรับคำเชิญ' })).toBeVisible();
   fireEvent.change(screen.getByLabelText('ชื่อผู้ตอบรับ'), { target: { value: 'Draft guest' } });
   fireEvent.click(screen.getByRole('button', { name: 'ปิดแบบตอบรับ' }));
-  act(() => observer.callback([{ target: end, isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
+  triggerRsvp(false);
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
+  triggerRsvp();
+  expect(screen.getByRole('dialog', { name: 'ตอบรับคำเชิญ' })).toBeVisible();
   expect(screen.getByLabelText('ชื่อผู้ตอบรับ')).toHaveValue('Draft guest');
 });
 
 it('keeps the sheet open on a failed save and allows retry', async () => {
+  const triggerRsvp = mockRsvpIntersection();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, json: async () => ({ error: 'กรุณาลองใหม่' }) }));
   render(<CanvaWeddingExperience mode="public" calendarLink="#calendar" />);
-  fireEvent.click(screen.getByRole('button', { name: 'ตอบรับคำเชิญ' }));
+  triggerRsvp();
   fireEvent.change(screen.getByLabelText('ชื่อผู้ตอบรับ'), { target: { value: 'Guest' } });
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
   expect(await screen.findByText('กรุณาลองใหม่')).toBeVisible();
