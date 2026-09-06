@@ -1,15 +1,14 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import Image from 'next/image';
-import { Check, Gift, Heart, HelpCircle, X } from 'lucide-react';
+import { Check, Heart, HelpCircle, X } from 'lucide-react';
 import type { PublicInvitation } from '@/lib/services/invitation-service';
 import type { BeerPreference, RsvpInput } from '@/lib/domain/types';
 
 const choices = [
-  { status: 'accepted' as const, label: 'ไปร่วมงาน', icon: Check },
-  { status: 'maybe' as const, label: 'ยังไม่แน่ใจ', icon: HelpCircle },
-  { status: 'rejected' as const, label: 'ไปไม่ได้', icon: X },
+  { status: 'accepted' as const, label: 'มา', icon: Check },
+  { status: 'maybe' as const, label: 'อาจจะ', icon: HelpCircle },
+  { status: 'rejected' as const, label: 'มาไม่ได้', icon: X },
 ];
 
 const emptyInput: RsvpInput = {
@@ -53,7 +52,6 @@ export function RsvpForm({
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [showGift, setShowGift] = useState(false);
 
   function setNumber(field: 'adultCount' | 'childCount' | 'childSeatCount', value: string) {
     setInput((current) => ({ ...current, [field]: Number(value) }));
@@ -75,10 +73,23 @@ export function RsvpForm({
     setSaving(true);
     setMessage('');
     try {
+      const payload = input.status === 'accepted'
+        ? input
+        : {
+            ...input,
+            adultCount: 0,
+            childCount: 0,
+            childSeatCount: 0,
+            dietaryNotes: '',
+            accessibilityNotes: '',
+            beerPreference: 'none',
+            songRequest: '',
+            reason: '',
+          };
       const response = await fetch(token ? `/api/invitations/${encodeURIComponent(token)}` : '/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(token ? input : { ...input, name, submissionId: id }),
+        body: JSON.stringify(token ? payload : { ...payload, name, submissionId: id }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'บันทึกไม่สำเร็จ');
@@ -103,6 +114,7 @@ export function RsvpForm({
             type="button"
             key={status}
             className={input.status === status ? 'rsvp-choice active' : 'rsvp-choice'}
+            aria-pressed={input.status === status}
             onClick={() => setStatus(status)}
           >
             <Icon size={18} />
@@ -129,32 +141,7 @@ export function RsvpForm({
           <label>แพ้อาหารหรือมีข้อจำกัดอะไรไหม<textarea value={input.dietaryNotes} onChange={(event) => setInput((current) => ({ ...current, dietaryNotes: event.target.value }))} /></label>
           <label>ความช่วยเหลือพิเศษ<textarea value={input.accessibilityNotes} onChange={(event) => setInput((current) => ({ ...current, accessibilityNotes: event.target.value }))} /></label>
         </div>
-      ) : (
-        <div className="form-stack">
-          <label>บอกเหตุผลให้เราทราบ (ไม่บังคับ)<textarea aria-label="บอกเหตุผลให้เราทราบ" value={input.reason} onChange={(event) => setInput((current) => ({ ...current, reason: event.target.value }))} /></label>
-          {input.status === 'rejected' && token ? (
-            <div className="gift-card">
-              <Heart size={20} />
-              <p>มาไม่ได้ไม่เป็นไร ส่งใจมาแทนก็ได้ 😆</p>
-              <button type="button" className="text-button" onClick={() => setShowGift((value) => !value)}>
-                <Gift size={16} /> {showGift ? 'ซ่อนซองออนไลน์' : 'เปิดซองออนไลน์ (ไม่บังคับ)'}
-              </button>
-              {showGift ? (
-                <div className="payment-qr" role="img" aria-label="QR ซองออนไลน์">
-                  <Image
-                    src={`/api/payment-qr/${encodeURIComponent(token)}`}
-                    alt="QR ซองออนไลน์"
-                    width={360}
-                    height={360}
-                    unoptimized
-                  />
-                  <small>ส่งใจมาแทนได้ตามสะดวก ไม่มีการติดตามยอดโอน</small>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      )}
+      ) : null}
 
       <button type="submit" className="primary-button" disabled={saving}>
         {saving ? 'กำลังบันทึก…' : 'ยืนยันคำตอบ'}

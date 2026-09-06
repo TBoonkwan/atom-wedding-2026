@@ -11,6 +11,7 @@ import { WEDDING } from '@/lib/domain/event';
 import type { PublicInvitation } from '@/lib/services/invitation-service';
 import { WeddingGallery } from './wedding-gallery';
 import { Countdown } from './countdown';
+import { RsvpSheet } from './rsvp-sheet';
 import { RsvpForm } from './rsvp-form';
 import styles from './canva-wedding.module.css';
 
@@ -59,6 +60,7 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
   const [editing, setEditing] = useState(
     personalized ? props.initialInvitation.status === 'pending' : false,
   );
+  const pageEnd = useRef<HTMLDivElement>(null);
   const galleryRoot = useRef<HTMLDivElement>(null);
   const calendarHref = personalized ? props.calendarLinks.google : props.calendarLink;
 
@@ -202,7 +204,7 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
           <div className={styles.rsvpContent}>
             <p data-text-reveal className={styles.rsvpTitle}>RSVP</p>
             <p data-text-reveal className={styles.rsvpDeadline}>kindly reply by<br /><time dateTime="2026-11-27">27.11.2026</time></p>
-            {personalized && invitation ? (
+            <RsvpSheet endRef={pageEnd}>{onComplete => personalized && invitation ? (
               <>
                 {invitation.status !== 'pending' && !editing ? (
                   <div className="rsvp-summary">
@@ -223,17 +225,18 @@ export function CanvaWeddingExperience(props: CanvaWeddingExperienceProps) {
                     <button className="text-button" type="button" onClick={() => setEditing(true)}><Pencil size={16} /> แก้ไขคำตอบ</button>
                   </div>
                 ) : (
-                  <RsvpForm token={props.token} initial={invitation} onSaved={(saved) => { setInvitation(saved); setEditing(false); }} />
+                  <RsvpForm token={props.token} initial={invitation} onSaved={(saved) => { setInvitation(saved); setEditing(false); onComplete(); }} />
                 )}
 
               </>
             ) : (
-              <RsvpForm onSaved={() => {}} />
-            )}
+              <RsvpForm onSaved={onComplete} />
+            )}</RsvpSheet>
           </div>
         </section>
 
         <footer className={styles.footer}><p data-text-reveal>ณัฐพล &amp; เพ็ญพิสุทธิ์</p><span>04 · 12 · 2026</span></footer>
+        <div ref={pageEnd} data-rsvp-page-end style={{ height: 1 }} />
       </main>
     </div>
   );

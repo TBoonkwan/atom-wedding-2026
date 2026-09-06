@@ -11,7 +11,7 @@ describe('RsvpForm', () => {
 
   it('shows attendance fields for an accepted response', () => {
     render(<RsvpForm token="demo" onSaved={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'ไปร่วมงาน' }));
+    fireEvent.click(screen.getByRole('button', { name: 'มา' }));
 
     expect(screen.getByLabelText('ผู้ใหญ่')).toBeInTheDocument();
     expect(screen.getByLabelText('เด็ก')).toBeInTheDocument();
@@ -20,9 +20,9 @@ describe('RsvpForm', () => {
   });
 
   it.each([
-    ['ยังไม่แน่ใจ', 'maybe'],
-    ['ไปไม่ได้', 'rejected'],
-  ] as const)('submits an optional empty reason for %s', async (choice, status) => {
+    ['อาจจะ', 'maybe'],
+    ['มาไม่ได้', 'rejected'],
+  ] as const)('submits %s without requesting a reason or gift', async (choice, status) => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({}),
@@ -31,7 +31,9 @@ describe('RsvpForm', () => {
     render(<RsvpForm token="demo" onSaved={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: choice }));
-    expect(screen.getByLabelText('บอกเหตุผลให้เราทราบ')).not.toBeRequired();
+    expect(screen.queryByLabelText('บอกเหตุผลให้เราทราบ')).not.toBeInTheDocument();
+    expect(screen.queryByText(/ซองออนไลน์/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('ผู้ใหญ่')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -59,7 +61,7 @@ describe('RsvpForm', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'ไปร่วมงาน' }));
+    fireEvent.click(screen.getByRole('button', { name: 'มา' }));
     fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -75,7 +77,7 @@ describe('RsvpForm', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     render(<RsvpForm token="demo" onSaved={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'ไปร่วมงาน' }));
+    fireEvent.click(screen.getByRole('button', { name: 'มา' }));
     fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -112,6 +114,42 @@ describe('RsvpForm', () => {
     const [, request] = fetchMock.mock.calls[0];
     expect(JSON.parse(request.body)).toMatchObject({
       songRequest: 'The historical first-dance song',
+    });
+  });
+
+  it('clears attendance-only details when an existing response changes to maybe', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({}),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(
+      <RsvpForm
+        token="change-to-maybe"
+        initial={{
+          ...DEMO_PUBLIC_INVITATION,
+          status: 'accepted',
+          adultCount: 2,
+          dietaryNotes: 'ไม่ทานเนื้อ',
+          beerPreference: 'ipa',
+          songRequest: 'The historical first-dance song',
+        }}
+        onSaved={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'อาจจะ' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ยืนยันคำตอบ' }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, request] = fetchMock.mock.calls[0];
+    expect(JSON.parse(request.body)).toMatchObject({
+      status: 'maybe',
+      adultCount: 0,
+      dietaryNotes: '',
+      beerPreference: 'none',
+      songRequest: '',
     });
   });
 });

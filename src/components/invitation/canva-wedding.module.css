@@ -108,7 +108,7 @@
 .editorialGrid figure { align-self: start; }
 .editorialGrid .widePhoto { grid-column: 1 / -1; }
 
-.rsvpSection { position: relative; margin-top: clamp(32px, 5vw, 72px); min-height: 1050px; padding: clamp(75px, 10vw, 130px) 6%; color: #eee7e0; background: #030303; border-radius: 42px 42px 0 0; overflow: hidden; }
+.rsvpSection { position: relative; margin-top: clamp(32px, 5vw, 72px); min-height: 520px; padding: clamp(75px, 10vw, 130px) 6%; color: #eee7e0; background: #030303; border-radius: 42px 42px 0 0; overflow: hidden; }
 .rsvpBackdrop { position: absolute; inset: 0; opacity: .27; filter: grayscale(1); }
 .rsvpBackdrop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#000 0, transparent 30%, #000 78%); }
 .rsvpBackdrop img { width: 100%; height: 100%; object-fit: contain; object-position: center top; }
@@ -159,7 +159,7 @@
   .timeline li time, .timeline li > span:last-child { grid-column: 2; }
   .sectionHeading strong, .sectionHeading time { font-size: .75rem; }
   .dressCard { border-radius: 14px; }
-  .rsvpSection { min-height: 920px; border-radius: 26px 26px 0 0; }
+  .rsvpSection { min-height: 420px; border-radius: 26px 26px 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) { .playButton { transition: none; } }
